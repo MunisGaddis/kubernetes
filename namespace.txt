@@ -1,0 +1,94 @@
+Kubernetes 
+
+What is a Kubernetes Namespace?
+A namespace is a way to organize cluster resources such as Pods, Services, Deployments, and other objects into separate, isolated groups.
+
+🔹 Why Use Namespaces?
+Namespaces are used to:
+
+Avoid naming conflicts: Resources with the same name can exist in different namespaces.
+Delegate access control: Use Role-Based Access Control (RBAC) to restrict who can access what.
+Separate environments: For example, use different namespaces for dev, test, and prod.
+Manage resource limits: Apply quotas and limits per namespace.
+
+🔹 Default Namespaces in a Cluster
+Kubernetes comes with some built-in namespaces:
+
+Namespace	Description
+default---------The default namespace for user-created resources.
+kube-system-----Used by Kubernetes system components (e.g., kube-dns).
+kube-public-----Publicly accessible resources across the cluster.
+kube-node-lease	-Used for node heartbeat management.
+
+There are two ways we can create namespace :- by command or by yml file
+Command to create namespace :- kubectl create namespace nginx-ns
+Create with yml file
+nano namespace.yml
+kind: Namespace
+apiVersion: v1
+metadata:
+   name: nginx-ns
+save file 
+kubectl apply -f namespace.yml
+kubectl delete namespace nginx-ns
+**********************************************************************************************************************************************************
+Pods
+
+Kubernetes Pods are the smallest and simplest unit that you can deploy and manage in Kubernetes.
+A Pod represents one or more containers (usually one) that share:
+
+Network: Each Pod gets its own IP address. All containers in the Pod share this IP and port space.
+Storage: Pods can share mounted volumes.
+Lifecycle: Containers in the same Pod are managed together and are co-located.
+
+Key Characteristics of Pods
+One or More Containers:
+
+Typically, a Pod runs a single container (1:1 mapping).
+Multi-container Pods are used when containers need to work closely together (e.g., sidecar pattern).
+
+Shared Resources:
+
+Containers in a Pod share the same network namespace (i.e., localhost means the same across containers).
+They can communicate using localhost and share storage volumes.
+
+Ephemeral:
+Pods are not self-healing. If a Pod dies, it’s replaced by a new one with a new IP (by a controller like a Deployment).
+
+Created by Controllers:
+Typically, you don’t create Pods directly.
+
+You define them in higher-level controllers like:
+
+Deployments
+StatefulSets
+DaemonSets
+
+We can create Pod either via command or by writing yml file 
+
+Create Pod via command :- 
+kubectl run nginx-pod \
+  --image=nginx:latest \
+  --restart=Never \
+  --port=80 \
+  --namespace=nginx-ns
+
+Create Pod via yml file:
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  namespace: nginx-ns
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+Create Pod :- kubectl apply -f pod.yml
+Verify Pod :- kubectl get pods -n nginx-ns (-n means in nginx-ns namespace)
+Check Pod Logs :- kubectl logs nginx-pod -n nginx-ns
+Exec into Pod :- kubectl exec -it nginx-pod -n nginx-ns -- /bin/bash
+**********************************************************************************************************************************************************
