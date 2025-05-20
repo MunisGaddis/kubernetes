@@ -59,11 +59,10 @@ Created by Controllers:
 Typically, you don’t create Pods directly.
 
 You define them in higher-level controllers like:
-
 Deployments
 StatefulSets
 DaemonSets
-
+*********************************************************************************************************************************************
 We can create Pod either via command or by writing yml file 
 
 Create Pod via command :- 
