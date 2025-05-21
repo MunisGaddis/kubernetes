@@ -1,5 +1,3 @@
-Deployments
-
 A Kubernetes Deployment is a resource object in Kubernetes used to manage and automate the creation, update, and scaling of application Pods.
 
 🔹 What Does a Deployment Do?
@@ -12,7 +10,7 @@ We need to create deployment in order to scale pod.
 Now Lets create deployment 
 
 apiVersion: Defines the API version to use for this object. In this case, apps/v1 is commonly used for Deployments, StatefulSets, DaemonSets, and other controllers under the apps group.
-
+One Line command : kubectl create deployment nginx-deployment --image=nginx:latest -n nginx-ns --replicas=2
 nano deployment.yml 
 
 apiVersion: apps/v1
@@ -41,6 +39,9 @@ Kubectl apply –f deployment.yml --dry-run=client
 kubectl apply -f deployment.yml 
 kubectl get deployment -n nginx-ns
 kubectl get pods -n nginx-ns
+To continuously watch the status of pods in the nginx-ns namespace, use:
+To refresh every 1 second:
+watch -n 1 kubectl get pods -n nginx-ns
 
 This command scales a Kubernetes deployment to a desired number of replicas (pods).
 kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=5 
