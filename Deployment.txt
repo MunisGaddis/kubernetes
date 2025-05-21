@@ -51,5 +51,8 @@ kubectl delete -f deployment.yaml
 Deployment do rolling updates but replica dosen't 
 kubectl get pods -n nginx-ns -o wide (to get more information about pod) 
 Roll out Command :- kubectl set image deployment/nginx-deployment nginx=nginx:nginx-1.27.5 -n nginx-ns 
+check pods 
 kubectl get pods -n nginx-ns 
 kubectl delete deployment nginx-deployment -n nginx-ns
+***********************************************************************************************************************
+
