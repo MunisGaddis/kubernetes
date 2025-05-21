@@ -7,10 +7,11 @@ Ensures the desired number of Pods are running and available.
 Supports rolling updates to update the application with zero downtime.
 Allows rollback to previous versions if something goes wrong.
 Monitors the health of Pods and replaces them if they crash or become unresponsive.
-
 We need to create deployment in order to scale pod. 
 
 Now Lets create deployment 
+
+apiVersion: Defines the API version to use for this object. In this case, apps/v1 is commonly used for Deployments, StatefulSets, DaemonSets, and other controllers under the apps group.
 
 nano deployment.yml 
 
