@@ -38,7 +38,6 @@ spec:
 ***************************************************************************************
 This checks for syntax or validation issues without actually creating the deployment.
 Kubectl apply –f deployment.yml --dry-run=client 
-kubectl delete -f pod.yml 
 kubectl apply -f deployment.yml 
 kubectl get deployment -n nginx-ns
 kubectl get pods -n nginx-ns
@@ -46,10 +45,10 @@ kubectl get pods -n nginx-ns
 This command scales a Kubernetes deployment to a desired number of replicas (pods).
 kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=5 
 kubectl get pods -n nginx-ns
+kubectl delete -f deployment.yaml
 
 Deployment do rolling updates but replica dosen't 
-kubectl get pods -n nginx -o wide (to get more information about pod) 
-Roll out Command 
-kubectl set image deployment /nginx-deployment -n nginx nginx=nginx:1.27.3 
+kubectl get pods -n nginx-ns -o wide (to get more information about pod) 
+Roll out Command :- kubectl set image deployment/nginx-deployment nginx=nginx:1.27.3 -n nginx-ns 
 kubectl get pods -n nginx-ns 
-kubectl delete deployment nginx-deployment -n nginx
+kubectl delete deployment nginx-deployment -n nginx-ns
