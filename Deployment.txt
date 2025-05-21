@@ -1,0 +1,53 @@
+Deployments
+
+A Kubernetes Deployment is a resource object in Kubernetes used to manage and automate the creation, update, and scaling of application Pods.
+
+🔹 What Does a Deployment Do?
+Ensures the desired number of Pods are running and available.
+Supports rolling updates to update the application with zero downtime.
+Allows rollback to previous versions if something goes wrong.
+Monitors the health of Pods and replaces them if they crash or become unresponsive.
+
+We need to create deployment in order to scale pod. 
+
+Now Lets create deployment 
+
+nano deployment.yml 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+***************************************************************************************
+This checks for syntax or validation issues without actually creating the deployment.
+Kubectl apply –f deployment.yml --dry-run=client 
+kubectl delete -f pod.yml 
+kubectl apply -f deployment.yml 
+kubectl get deployment -n nginx-ns
+kubectl get pods -n nginx-ns
+
+This command scales a Kubernetes deployment to a desired number of replicas (pods).
+kubectl scale deployment/nginx-deployment -n nginx --replicas=5 
+
+Deployment do rolling updates but replica dosen't 
+kubectl get pods -n nginx -o wide (to get more information about pod) 
+Roll out Command 
+kubectl set image deployment /nginx-deployment -n nginx nginx=nginx:1.27.3 
+kubectl get pods -n nginx-ns 
+kubectl delete deployment nginx-deployment -n nginx
