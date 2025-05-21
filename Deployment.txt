@@ -44,7 +44,8 @@ kubectl get deployment -n nginx-ns
 kubectl get pods -n nginx-ns
 
 This command scales a Kubernetes deployment to a desired number of replicas (pods).
-kubectl scale deployment/nginx-deployment -n nginx --replicas=5 
+kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=5 
+kubectl get pods -n nginx-ns
 
 Deployment do rolling updates but replica dosen't 
 kubectl get pods -n nginx -o wide (to get more information about pod) 
