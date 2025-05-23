@@ -1,0 +1,60 @@
+Horizontal Pod Autoscaler (HPA) is a Kubernetes feature that automatically scales the number of pods in a deployment, 
+replication controller, replica set, or stateful set based on observed CPU utilization (or with custom metrics).
+
+🔧 How HPA Works
+The HPA controller periodically checks the metrics (e.g., CPU usage) and adjusts the number of pods accordingly to 
+maintain performance and resource efficiency.
+
+🏗️ Basic Requirements
+Metrics Server must be installed and running in the cluster.
+
+mkdir hpa
+cd hpa
+kubectl get all -n online-shop
+scale the online-shop deployment
+kubectl scale deployment online-shop-deployment -n online-shop --replicas=5
+
+We will create HPA and attach with deployment
+when load on node will increase we will check metrics
+
+If you are using a Kind cluster install Metrics Server
+
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+Edit the Metrics Server Deployment
+kubectl -n kube-system edit deployment metrics-server
+Add the security bypass to deployment under container.args
+- --kubelet-insecure-tls
+- --kubelet-preferred-address-types=InternalIP,Hostname,ExternalIP
+Restart the deployment
+kubectl -n kube-system rollout restart deployment metrics-server
+Verify if the metrics server is running
+kubectl get pods -n kube-system
+kubectl top nodes
+*******************************************************************************************************************
+Create hpa.yml
+nano hpa.yml
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: online-shop-hpa
+  namespace: online-shop
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: online-shop-deployment
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 2
+
+kubectl apply -f hpa.yml
+
+
+  
