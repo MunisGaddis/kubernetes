@@ -1,0 +1,15 @@
+In Kubernetes, PV (PersistentVolume) and PVC (PersistentVolumeClaim) are key components of the storage architecture that abstract the 
+way storage is provisioned and used by pods.
+
+📦 What is a PersistentVolume (PV)?
+A PV is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using StorageClasses.
+It's a resource in the cluster, similar to a node.
+It represents a real storage device like a GCE disk, EBS volume, NFS share, or local disk.
+
+📝 What is a PersistentVolumeClaim (PVC)?
+A PVC is a request for storage by a user.
+It specifies size, access modes, and optionally a specific StorageClass.
+Kubernetes matches PVCs to PVs that satisfy the claim.
+
+*************************************************************************************************************************************************
+
