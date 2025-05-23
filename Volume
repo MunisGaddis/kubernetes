@@ -82,3 +82,7 @@ ls
 cd data
 ls
 Check data
+
+Delete namespace 
+kubectl delete -f namespace.yml
+
