@@ -223,9 +223,7 @@ spec:
           storage: 1Gi
           
 Optional: Headless Service for StatefulSet
-yaml
-Copy
-Edit
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -251,9 +249,7 @@ Designed to be used in selectors.
 Keys and values must conform to naming rules.
 
 ✅ Example
-yaml
-Copy
-Edit
+
 apiVersion: v1
 kind: Pod
 metadata:
