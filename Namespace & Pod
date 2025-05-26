@@ -92,4 +92,139 @@ Create Pod :- kubectl apply -f pod.yml
 Verify Pod :- kubectl get pods -n nginx-ns (-n means in nginx-ns namespace)
 Check Pod Logs :- kubectl logs nginx-pod -n nginx-ns
 Exec into Pod :- kubectl exec -it nginx-pod -n nginx-ns -- /bin/bash
-******************************************************************************************************************************************************
+************************************************************************************************************************************************
+
+Deployment
+Purpose: Manages stateless applications.
+
+Manages: ReplicaSets (automatically).
+Use Case: Ideal for web apps, APIs, frontend servers.
+Pod Identity: No persistent identity. Pods are interchangeable.
+Updates: Supports rolling updates and rollbacks.
+
+Example Use Case:
+Your nginx-deployment ensures that 3 replicas of the nginx container are always running and can be updated with zero downtime.
+
+1. Nginx Deployment
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+*******************************************************************************************************************************        
+ReplicaSet
+Purpose: Maintains a stable set of replica Pods.
+
+Manages: Pods directly.
+Use Case: Rarely used on its own — typically used by Deployments.
+Pod Identity: No persistent identity. Pods are interchangeable.
+Updates: No rolling update support on its own.
+
+Example Use Case:
+Your nginx-replicaset keeps 3 nginx pods running but lacks features like rolling updates. You’d have to delete and recreate to update the image. 
+      
+2. Nginx ReplicaSet
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  labels:
+    app: nginx-rs
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-rs
+  template:
+    metadata:
+      labels:
+        app: nginx-rs
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+***********************************************************************************************************************************
+ ✅ 3. StatefulSet
+Purpose: Manages stateful applications.
+
+Manages: Stateful Pods with stable identity.
+Use Case: Databases (like MySQL, Cassandra), queues (Kafka, RabbitMQ).
+Pod Identity:
+Stable hostname: nginx-statefulset-0, nginx-statefulset-1, etc.
+Stable network identity.
+Persistent storage via volumeClaimTemplates.
+
+Example Use Case:
+Your nginx-statefulset is useful if each nginx pod must retain its own persistent storage and identity (e.g., for caching, logs).       
+
+
+3. Nginx StatefulSet
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx-statefulset
+spec:
+  serviceName: "nginx"
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx-ss
+  template:
+    metadata:
+      labels:
+        app: nginx-ss
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: www
+          mountPath: /usr/share/nginx/html
+  volumeClaimTemplates:
+  - metadata:
+      name: www
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+          
+Optional: Headless Service for StatefulSet
+yaml
+Copy
+Edit
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+spec:
+  clusterIP: None
+  selector:
+    app: nginx-ss
+  ports:
+  - port: 80
+    targetPort: 80
+*********************************************************************************************************************
