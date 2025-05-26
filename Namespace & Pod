@@ -112,22 +112,23 @@ kind: Deployment
 metadata:
   name: nginx-deployment
   labels:
-    app: nginx
+    app: nginx             # Label on Deployment object itself
 spec:
   replicas: 3
   selector:
     matchLabels:
-      app: nginx
+      app: nginx           # Selector to identify Pods managed by this Deployment
   template:
     metadata:
       labels:
-        app: nginx
+        app: nginx         # Labels assigned to Pods created by this Deployment
     spec:
       containers:
       - name: nginx
         image: nginx:latest
         ports:
         - containerPort: 80
+
 *******************************************************************************************************************************        
 ReplicaSet
 Purpose: Maintains a stable set of replica Pods.
