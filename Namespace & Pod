@@ -129,6 +129,15 @@ spec:
         ports:
         - containerPort: 80
 
+Deployment to see Pod info:
+kubectl get deployment nginx-deployment
+kubectl get pods -l app=nginx
+kubectl get pods --show-labels
+
+Describe the Deployment to see Pod details and events
+kubectl describe deployment nginx-deployment
+kubectl delete deployment nginx-deployment
+
 *******************************************************************************************************************************        
 ReplicaSet
 Purpose: Maintains a stable set of replica Pods.
