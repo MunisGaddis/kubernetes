@@ -1,0 +1,147 @@
+What is a Kubernetes Service?
+In Kubernetes, a Service is an abstraction which defines a logical set of Pods and a policy by which to access them. 
+Because Pods are ephemeral (they can be created and destroyed dynamically), Services provide a stable endpoint (IP address and DNS name) 
+to allow communication between different parts of your application or from outside the cluster.
+
+Services enable:
+Load balancing across multiple Pods
+Service discovery inside the cluster
+Stable networking endpoint even if Pods change
+
+Types of Kubernetes Services
+There are four main types of Services in Kubernetes:
+1. ClusterIP (default)
+Exposes the service on a cluster-internal IP.
+Accessible only inside the Kubernetes cluster.
+Used for internal communication between Pods.
+Example use case: Backend services that only other Pods should access.
+
+2. NodePort
+Exposes the service on each Node’s IP at a static port (the NodePort).
+Makes the service accessible from outside the cluster using <NodeIP>:<NodePort>.
+NodePort is built on top of ClusterIP (service is still accessible inside the cluster).
+Example use case: Simple external access without a load balancer.
+
+3. LoadBalancer
+Exposes the service externally using a cloud provider’s load balancer (e.g., AWS ELB, GCP LB).
+The cloud provider provisions a load balancer and routes traffic to the NodePort.
+Requires Kubernetes running in a supported cloud environment.
+Example use case: Production services needing a stable external endpoint with cloud LB.
+
+4. ExternalName
+Maps the service to a DNS name (external to the cluster).
+Does not create a typical proxy or IP; instead, it returns a CNAME record to clients.
+Useful for accessing external resources as if they were a service inside the cluster.
+Example use case: Connecting to an external database or API endpoint.
+
+Summary Table
+Service Type	 Internal Access	    External Access	              Use Case
+ClusterIP	     Yes	                No	                          Internal-only services
+NodePort	     Yes	                Yes,via <NodeIP>:<NodePort>	  Simple external access
+LoadBalancer	 Yes	                Yes, via cloud provider LB	  Production-grade external access
+ExternalName	 No	                  DNS alias to external service	Alias for external services
+********************************************************************************************************************
+Below are examples 
+Example YAML for a ClusterIP Service
+nano service.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-ns
+  namespace: nginx-ns
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 82           # Port exposed inside the cluster
+      targetPort: 80   # Port on Pod containers
+  type: ClusterIP
+********************************************************************************************************************
+kubectl apply -f service.yml
+kubectl get svc -n nginx-ns
+nginx is running on port 82
+We need to foward port 
+kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
+if permision denied then give -E environment
+sudo -E kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
+Now access IP:Port on browser
+kubectl scale deployment nginx-deployment -n nginx-ns --replicas=10
+Now all pods will handle traffic
+kubectl scale deployment nginx-deployment -n nginx-ns --replicas=0
+Now no one will be able to access nginx application
+********************************************************************************************************************
+Online Shopping App Project
+
+git clone httdocker ps://github.com/MunisGaddis/online_shopping_app.git
+docker build -t online_shop_app:latest .
+docker run -d -p 5173:5173 online_shop_app:latest
+check app in browser IP:Port
+docker stop container id
+docker rm container id
+docker image tag online_shop_app:latest munishkapoorin/online_shop_app:latest
+docker login 
+Enter user name :- munishkapoorin
+Enter Personal access token :- 
+docker push munishkapoorin/online_shop_app:latest
+mkdir k8s
+cd k8s
+create namespace 
+nano online-shop.yml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: online-shop
+
+kubectl apply -f namespace.yml
+kubectl get ns
+create deployment 
+nano deployment.yml 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-shop-deployment
+  namespace: online-shop
+  labels:
+    app: online-shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: online-shop
+  template:
+    metadata:
+      labels:
+        app: online-shop
+    spec:
+      containers:
+      - name: online-shop-container
+        image: munishkapoorin/online_shop_app:latest
+        ports:
+        - containerPort: 5173
+
+kubectl apply -f deployment.yml
+kubectl get pods -n online-shop
+we will create service.yml so that app can interact outside
+nano service.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-shop-svc
+  namespace: online-shop
+spec:
+  selector:
+    app: online-shop
+  ports:
+  - protocol: TCP
+    port: 5173
+    targetPort: 5173
+
+kubectl apply -f service.yml
+kubectl get all -n online-shop
+kubectl port-forward svc/online-shop-svc -n online-shop 5173:5173 --address=0.0.0.0
+check IP:Port on browser
