@@ -38,7 +38,7 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
-***************************************************************************************
+*********************************************************************************************************************
 This checks for syntax or validation issues without actually creating the deployment.
 kubectl apply -f deployment.yml --dry-run=client 
 kubectl apply -f deployment.yml 
@@ -49,7 +49,8 @@ To refresh every 1 second:
 watch -n 1 kubectl get pods -n nginx-ns
 
 This command scales a Kubernetes deployment to a desired number of replicas (pods).
-kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=5 
+kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=5
+kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=0
 kubectl get pods -n nginx-ns
 kubectl delete -f deployment.yaml
 
@@ -59,4 +60,113 @@ Roll out Command :- kubectl set image deployment/nginx-deployment nginx=nginx:ng
 check pods 
 kubectl get pods -n nginx-ns 
 kubectl delete deployment nginx-deployment -n nginx-ns
-***********************************************************************************************************
+****************************************************************************************************************************************
+A ReplicaSet in Kubernetes is a controller that ensures a specified number of identical pod replicas are running at any given time.
+
+What it does
+Ensures that the desired number of pods are always up and running.
+If a pod crashes or is deleted, the ReplicaSet automatically creates a new one to maintain the count.
+If there are too many pods (e.g., you scaled down), it will terminate the extra pods.
+
+nano replicaset.yml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  namespace: nginx-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+Add Resource Requests/Limits:
+
+resources:
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+
+Add Health Probes:
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+✅ Notes:
+This ReplicaSet does not include rolling updates or deployment strategies, which are handled by a Deployment.
+Make sure the namespace nginx-ns exists, or include a namespace manifest as mentioned earlier.
+****************************************************************************************************************************************
+A StatefulSet is a Kubernetes controller used to manage stateful applications — apps that require persistent storage, 
+stable network identities, and ordered deployment or scaling.
+
+📦 What a StatefulSet Does:
+Maintains a unique identity for each pod (like pod-0, pod-1, etc.).
+Keeps data persistent using PersistentVolumeClaims (PVCs), even if a pod is deleted or rescheduled.
+Ensures ordered creation, deletion, and scaling of pods.
+
+🧠 When to Use StatefulSet:
+Use it when your app:
+Needs stable storage (e.g., databases like MySQL, PostgreSQL).
+Requires sticky network identities (e.g., redis-0.nginx.default.svc.cluster.local).
+Needs pods to be created in a specific sequence.
+
+StatefulSet YAML for running two replicas of NGINX:
+
+nano statefulset.yml
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx-statefulset
+  namespace: nginx-ns
+spec:
+  serviceName: "nginx"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+  volumeClaimTemplates:
+  - metadata:
+      name: nginx-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: "standard"  # Replace with your storage class
+********************************************************************************************************************************************
