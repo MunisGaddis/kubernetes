@@ -1,4 +1,7 @@
 *************************************************************************************************************************
+A Kubernetes Namespace is a way to divide cluster resources between multiple users or teams. It provides a virtual cluster 
+inside the Kubernetes cluster.
+
 Create Namespace
 
 nano namespace.yml
@@ -13,6 +16,14 @@ kubectl get ns
 kubectl delete namespace nginx-ns
 
 ***********************************************************************************************************************************************
+A Pod is the smallest and simplest unit in Kubernetes — it represents one or more containers that are deployed together on the same host.
+
+What is a Pod?
+A Pod wraps one or more containers (usually one) that share:
+Networking: same IP address, port space.
+Storage: can share volumes.
+Containers in a Pod always run on the same node and can communicate easily.
+
 Create Pod in Nginx-ns Namespace
 
 nano pod.yml
