@@ -1,3 +1,41 @@
+*************************************************************************************************************************
+Create Namespace
+
+nano namespace.yml
+
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: nginx-ns
+  
+kubectl apply -f namespace.yml
+kubectl get ns
+kubectl delete namespace nginx-ns
+
+***********************************************************************************************************************************************
+Create Pod in Nginx-ns Namespace
+
+nano pod.yml
+
+apiVersion: v1
+kind: Pod
+
+metadata:
+  name: nginx-pod
+  namespace: nginx-ns
+
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+   
+kubectl apply -f pod.yml
+kubectl get pods -n nginx-ns
+kubectl delete pod nginx-pod -n nginx-ns   
+
+**********************************************************************************************************************************************
 In order to have desired state we need deployment
 
 A Kubernetes Deployment is a resource object in Kubernetes used to manage and automate the creation, update, and scaling of application Pods.
@@ -12,7 +50,8 @@ We need to create deployment in order to scale pod.
 
 Now Lets create deployment 
 
-apiVersion: Defines the API version to use for this object. In this case, apps/v1 is commonly used for Deployments, StatefulSets, DaemonSets, and other controllers under the apps group.
+apiVersion: Defines the API version to use for this object. In this case, apps/v1 is commonly used for Deployments, StatefulSets, 
+DaemonSets, and other controllers under the apps group.
 
 One Line command : kubectl create deployment nginx-deployment --image=nginx:latest -n nginx-ns --replicas=2
 
