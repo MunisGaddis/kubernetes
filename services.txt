@@ -56,7 +56,7 @@ spec:
 kubectl apply -f service.yml
 kubectl get svc -n nginx-ns
 nginx is running on port 82
-We need to foward port 
+We need to foward port in order to run nginx
 kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
 if permision denied then give -E environment
 sudo -E kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
