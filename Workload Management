@@ -170,6 +170,8 @@ readinessProbe:
   initialDelaySeconds: 5
   periodSeconds: 10
 
+To check metrics :- kubectl top pod <pod-name> -n nginx-ns
+
 ✅ Notes:
 This ReplicaSet does not include rolling updates or deployment strategies, which are handled by a Deployment.
 Make sure the namespace nginx-ns exists, or include a namespace manifest as mentioned earlier.
