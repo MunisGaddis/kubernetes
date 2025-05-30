@@ -33,16 +33,10 @@ Maps the service to a DNS name (external to the cluster).
 Does not create a typical proxy or IP; instead, it returns a CNAME record to clients.
 Useful for accessing external resources as if they were a service inside the cluster.
 Example use case: Connecting to an external database or API endpoint.
-
-Summary Table
-Service Type	 Internal Access	    External Access	              Use Case
-ClusterIP	     Yes	                No	                          Internal-only services
-NodePort	     Yes	                Yes,via <NodeIP>:<NodePort>	  Simple external access
-LoadBalancer	 Yes	                Yes, via cloud provider LB	  Production-grade external access
-ExternalName	 No	                  DNS alias to external service	Alias for external services
 ********************************************************************************************************************
 Below are examples 
 Example YAML for a ClusterIP Service
+
 nano service.yml
 
 apiVersion: v1
