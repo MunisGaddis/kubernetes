@@ -68,7 +68,7 @@ Now no one will be able to access nginx application
 ********************************************************************************************************************
 Online Shopping App Project
 
-git clone httdocker ps://github.com/MunisGaddis/online_shopping_app.git
+git clone https://github.com/MunisGaddis/online_shopping_app.git
 docker build -t online_shop_app:latest .
 docker run -d -p 5173:5173 online_shop_app:latest
 check app in browser IP:Port
