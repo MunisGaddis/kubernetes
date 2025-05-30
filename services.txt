@@ -91,6 +91,7 @@ metadata:
 
 kubectl apply -f namespace.yml
 kubectl get ns
+
 create deployment 
 nano deployment.yml 
 
