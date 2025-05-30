@@ -171,6 +171,16 @@ readinessProbe:
   periodSeconds: 10
 
 To check metrics :- kubectl top pod <pod-name> -n nginx-ns
+kubectl get replicaset -n nginx-ns
+
+Get detailed info about a specific ReplicaSet:
+kubectl describe replicaset nginx-replicaset -n nginx-ns
+
+Delete a specific ReplicaSet in the current namespace:
+kubectl delete replicaset nginx-replicaset -n nginx-ns
+
+Delete all ReplicaSets in a namespace (be careful!):
+kubectl delete replicaset --all -n nginx-ns
 
 ✅ Notes:
 This ReplicaSet does not include rolling updates or deployment strategies, which are handled by a Deployment.
