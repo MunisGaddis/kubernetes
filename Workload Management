@@ -88,7 +88,7 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
-*********************************************************************************************************************
+************************************************************************************************************************************
 This checks for syntax or validation issues without actually creating the deployment.
 kubectl apply -f deployment.yml --dry-run=client 
 kubectl apply -f deployment.yml 
@@ -99,14 +99,17 @@ To refresh every 1 second:
 watch -n 1 kubectl get pods -n nginx-ns
 
 This command scales a Kubernetes deployment to a desired number of replicas (pods).
-kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=5
+kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=10
 kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=0
 kubectl get pods -n nginx-ns
 kubectl delete -f deployment.yaml
 
 Deployment do rolling updates but replica dosen't 
 kubectl get pods -n nginx-ns -o wide (to get more information about pod) 
-Roll out Command :- kubectl set image deployment/nginx-deployment nginx=nginx:nginx-1.27.5 -n nginx-ns 
+Currently all pods are running on latest nginx
+Go to deployment.yml and change nginx version : 1.27.5
+Roll out Command :- 
+kubectl set image deployment/nginx-deployment nginx=nginx:nginx-1.27.5 -n nginx-ns 
 check pods 
 kubectl get pods -n nginx-ns 
 kubectl delete deployment nginx-deployment -n nginx-ns
