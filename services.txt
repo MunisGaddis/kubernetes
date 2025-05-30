@@ -70,10 +70,12 @@ Online Shopping App Project
 
 git clone https://github.com/MunisGaddis/online_shopping_app.git
 docker build -t online_shop_app:latest .
+we will check if application is running or not
 docker run -d -p 5173:5173 online_shop_app:latest
 check app in browser IP:Port
 docker stop container id
 docker rm container id
+now will tag online_shop_app:latest
 docker image tag online_shop_app:latest munishkapoorin/online_shop_app:latest
 docker login 
 Enter user name :- munishkapoorin
@@ -91,7 +93,7 @@ metadata:
 
 kubectl apply -f namespace.yml
 kubectl get ns
-
+****************************************************************************************************************
 create deployment 
 nano deployment.yml 
 
@@ -120,6 +122,7 @@ spec:
 
 kubectl apply -f deployment.yml
 kubectl get pods -n online-shop
+
 we will create service.yml so that app can interact outside
 nano service.yml
 
