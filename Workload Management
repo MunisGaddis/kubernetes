@@ -1,4 +1,4 @@
-*************************************************************************************************************************
+***********************************************************************************************************************************************
 A Kubernetes Namespace is a way to divide cluster resources between multiple users or teams. It provides a virtual cluster 
 inside the Kubernetes cluster.
 
