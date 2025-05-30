@@ -170,7 +170,11 @@ readinessProbe:
   initialDelaySeconds: 5
   periodSeconds: 10
 
-To check metrics :- kubectl top pod <pod-name> -n nginx-ns
+To check metrics :- 
+kubectl top pod <pod-name> -n nginx-ns
+
+kubectl scale replicaset nginx-replicaset --replicas=5 -n nginx-ns
+
 kubectl get replicaset -n nginx-ns
 
 Get detailed info about a specific ReplicaSet:
