@@ -93,12 +93,12 @@ spec:
         ports:
         - containerPort: 80
 
-create service.yml
-
 kubectl apply -f apache.yml
 kubectl get pods -n online-shop
 
 In order to access apache deployment we need a service
+create service.yml
+
 nano serviceapache.yml
 
 kind: Service
