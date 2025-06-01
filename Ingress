@@ -123,5 +123,5 @@ add new path in ingress.yml
             name: apache-service
             port:
               number: 80
-Now access application IP:shop or apache
+Now access application IP:shop/apache
 **************************************************************************************************************************
