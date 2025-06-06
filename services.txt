@@ -116,7 +116,7 @@ spec:
     spec:
       containers:
       - name: online-shop-container
-        image: munishkapoorin/online_shop_app:latest
+        image: monudocker334/online_shop_app:latest
         ports:
         - containerPort: 5173
 
