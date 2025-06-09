@@ -34,11 +34,37 @@ Does not create a typical proxy or IP; instead, it returns a CNAME record to cli
 Useful for accessing external resources as if they were a service inside the cluster.
 Example use case: Connecting to an external database or API endpoint.
 ********************************************************************************************************************
-Below are examples 
-Example YAML for a ClusterIP Service
 
-nano service.yml
+Kubernetes Service
 
+Full YAML: Namespace, Deployment, and Service
+*********************************************************
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-ns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx-ns
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -49,12 +75,15 @@ spec:
     app: nginx
   ports:
     - protocol: TCP
-      port: 82           # Port exposed inside the cluster
-      targetPort: 80   # Port on Pod containers
-  type: ClusterIP
-********************************************************************************************************************
-kubectl apply -f service.yml
+      port: 82         # Service port
+      targetPort: 80   # Pod's container port
+********************************************************************************
+add type in yml 
+type : ClusterIP or External or NodePort
+kubectl apply -f nginx-setup.yml
+kubectl get pods -n nginx-ns -o wide
 kubectl get svc -n nginx-ns
+**********************************************************************************
 nginx is running on port 82
 We need to foward port in order to run nginx
 kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
