@@ -36,6 +36,7 @@ We need to install Ingress controller
 search ingress in google 
 Install ingress NGINX
 kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+kubectl delete -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
 kubectl get svc -n ingress-nginx
 kubectl get pods -n ingress-nginx
 If we need to access app outside
