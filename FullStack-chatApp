@@ -6,8 +6,7 @@ push to dockerhub :- docker push monudocker334/chatapp-backend:latest
 cd frontend
 build image :- docker build -t monudocker334/chatapp-frontend:latest .
 push to dockerhub :- docker push monudocker334/chatapp-frontend:latest
-
-Create folder k8s
+********************************************************************************
 cd k8s
 kubectl apply -f namespace.yml
 kubectl apply -f secrets.yml
