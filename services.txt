@@ -140,7 +140,7 @@ spec:
     spec:
       containers:
       - name: online-shop-container
-        image: monudocker334/online_shop_app:latest
+        image: monudocker334/online-shop-app-k8s:latest
         ports:
         - containerPort: 5173
 
