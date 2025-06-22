@@ -3,8 +3,8 @@
 git clone https://github.com/LondheShubham153/full-stack_chatApp.git
 cd full-stack_chatApp
 cd backend
-build image :- docker build -t monudocker334/chatapp-backend:latest .
-push to dockerhub :- docker push monudocker334/chatapp-backend:latest
+build image :- docker build -t monudocker334/chatapp-backend-k8s:latest .
+push to dockerhub :- docker push monudocker334/chatapp-backend-k8s:latest
 cd frontend
 build image :- docker build -t monudocker334/chatapp-frontend:latest .
 push to dockerhub :- docker push monudocker334/chatapp-frontend:latest
