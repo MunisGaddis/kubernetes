@@ -112,9 +112,32 @@ spec:
 *****************************************************************************
 kubectl apply -f petclinic-app-deployment.yml
 kubectl get all -n dev
+
+Check Logs for Database Connectivity:
+It is crucial to ensure that the PetClinic application has connected to the MySQL database.
+kubectl logs <petclinic-pod-name>
+
+Inside the PetClinic pod, use nslookup to verify DNS resolution:
+kubectl exec -it <petclinic-pod-name> -- nslookup <mysql-service-name>
+
+Ensure the MySQL Service is Running:
+The MySQL service is responsible for allowing the PetClinic application to connect to the database.
+kubectl get svc
+
+Check Service Endpoints:
+Ensure that Kubernetes is routing traffic correctly between the PetClinic app and MySQL
+kubectl get endpoints <mysql-service-name>
+
+Monitor Resources:
+Ensure that both MySQL and the PetClinic app are not consuming excessive resources.
+Check pod resource usage:
+kubectl top pod
+
 Access the Spring PetClinic application using the NodePort URL http://<node-ip>:30007.
 Find Owners Page and details of a particular Owner:
 Add a new Owner and adding Pets to him:
 Now you can check in MySQL shell that new user has been added or not:
 SELECT * FROM owners;
 SELECT * FROM pets;
+kubectl delete -f .
+*****************************************************************************************************************
