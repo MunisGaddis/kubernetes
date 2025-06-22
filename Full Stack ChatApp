@@ -6,8 +6,8 @@ cd backend
 build image :- docker build -t monudocker334/chatapp-backend-k8s:latest .
 push to dockerhub :- docker push monudocker334/chatapp-backend-k8s:latest
 cd frontend
-build image :- docker build -t monudocker334/chatapp-frontend:latest .
-push to dockerhub :- docker push monudocker334/chatapp-frontend:latest
+build image :- docker build -t monudocker334/chatapp-frontend-k8s:latest .
+push to dockerhub :- docker push monudocker334/chatapp-frontend-k8s:latest
 
 rm -rf * 
 docker system prune -a
