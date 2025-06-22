@@ -81,7 +81,7 @@ spec:
     spec:
       containers:
         - name: petclinic
-          image: monudocker334/petclinic-spring-app:v1
+          image: monudocker334/petclinic-app:latest
           ports:
             - containerPort: 8080
           env:
