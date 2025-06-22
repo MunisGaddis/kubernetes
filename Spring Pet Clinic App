@@ -1,7 +1,8 @@
 Deploying the Spring Pet Clinic App in Kubernetes.
 git clone https://github.com/subha-devops-design/petclinic-app.git
-build image :- docker build -t monudocker334/petclinic-app:latest .
-push to dockerhub :- docker push monudocker334/petclinic-app:latest
+build image :- docker build -t monudocker334/petclinic-app-k8s:latest .
+push to dockerhub :- docker push monudocker334/petclinic-app-k8s:latest
+
 kubectl create namespace dev
 Set as dev namespace as default namespace:
 kubectl config set-context --current --namespace=dev
