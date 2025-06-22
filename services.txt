@@ -98,18 +98,13 @@ Now no one will be able to access nginx application
 Online Shopping App Project
 
 git clone https://github.com/LondheShubham153/online_shopping_app.git
-docker build -t online_shop_app:latest .
+docker build -t monudocker334/online-shop-app-k8s:latest .
 we will check if application is running or not
 docker run -d -p 5173:5173 online_shop_app:latest
 check app in browser IP:Port
 docker stop container id
 docker rm container id
-now will tag online_shop_app:latest
-docker image tag online_shop_app:latest monudocker334/online_shop_app:latest
-docker login 
-Enter user name :- munishkapoorin
-Enter Personal access token :- 
-docker push monudocker334/online_shop_app:latest
+docker push monudocker334/online-shop-app-k8s:latest
 mkdir k8s
 cd k8s
 create namespace 
