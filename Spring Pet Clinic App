@@ -1,5 +1,5 @@
 Deploying the Spring Pet Clinic App in Kubernetes.
-
+git clone https://github.com/subha-devops-design/petclinic-app.git
 kubectl create namespace dev
 Set as dev namespace as default namespace:
 kubectl config set-context --current --namespace=dev
