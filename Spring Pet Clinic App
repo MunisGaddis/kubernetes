@@ -54,7 +54,7 @@ spec:
 **********************************************************************
 kubectl apply -f mysql-deployment.yml
 kubectl get all -n dev
-kubectl exec -it mysql-db-7d8cf944c-mcvnq -- /bin/sh
+kubectl exec -it mysql-db-7d8cf944c-wbqgb -n dev -- /bin/sh
 mysql -u root -p
 SHOW DATABASES;
 USE petclinic;
