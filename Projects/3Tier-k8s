@@ -47,3 +47,14 @@ Run this command to access localhost:port
 kubectl port-forward service/frontend 3000:3000 -n workshop
 Then open:
 http://localhost:3000
+***************************************************************************************************
+You can delete all the resources in the workshop namespace using this command:
+
+kubectl delete all --all -n workshop
+This will delete:
+
+All Pods
+All Services
+All Deployments
+All ReplicaSets
+Everything managed by kubectl get all
