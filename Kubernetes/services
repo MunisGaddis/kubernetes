@@ -112,72 +112,13 @@ Now no one will be able to access nginx application
 Online Shopping App Project
 
 git clone https://github.com/LondheShubham153/online_shopping_app.git
-docker build -t monudocker334/online-shop-app-k8s:latest .
+docker build -t online_shop_app-k8s:latest .
 we will check if application is running or not
-docker run -d -p 5173:5173 online_shop_app:latest
-check app in browser IP:Port
+docker run -d -p 5173:80 online_shop_app-k8s:latest
+docker push monudocker334/online-shop-app-k8s:latest
+check app in browser localhost:5173
 docker stop container id
 docker rm container id
-docker push monudocker334/online-shop-app-k8s:latest
 mkdir k8s
 cd k8s
-create namespace 
-nano online-shop.yml
 
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: online-shop
-
-kubectl apply -f namespace.yml
-kubectl get ns
-****************************************************************************************************************
-create deployment 
-nano deployment.yml 
-
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: online-shop-deployment
-  namespace: online-shop
-  labels:
-    app: online-shop
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: online-shop
-  template:
-    metadata:
-      labels:
-        app: online-shop
-    spec:
-      containers:
-      - name: online-shop-container
-        image: monudocker334/online-shop-app-k8s:latest
-        ports:
-        - containerPort: 5173
-
-kubectl apply -f deployment.yml
-kubectl get pods -n online-shop
-
-we will create service.yml so that app can interact outside
-nano service.yml
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: online-shop-svc
-  namespace: online-shop
-spec:
-  selector:
-    app: online-shop
-  ports:
-  - protocol: TCP
-    port: 5173
-    targetPort: 5173
-
-kubectl apply -f service.yml
-kubectl get all -n online-shop
-kubectl port-forward svc/online-shop-svc -n online-shop 5173:5173 --address=0.0.0.0
-check IP:Port on browser
