@@ -1,0 +1,128 @@
+Ingress
+
+Kubernetes Ingress is a Kubernetes resource that manages external access to services running inside your cluster — typically over HTTP and HTTPS.
+Instead of exposing each service individually (e.g., via NodePort or LoadBalancer), Ingress lets you route external 
+traffic to multiple services using a single entry point (like a single IP or domain).
+
+Key Components:- 
+Ingress Resource:
+A YAML configuration that defines rules for routing traffic based on:
+Hostnames (example.com)
+URL paths (/api, /login)
+
+Ingress Controller:
+A pod or set of pods that implement the Ingress rules. Popular controllers include:
+
+NGINX Ingress Controller
+Traefik
+HAProxy
+AWS ALB Ingress Controller
+
+📌 Why Use Ingress?
+✅ Route traffic based on host or path
+✅ Terminate SSL/TLS (HTTPS)
+✅ Set authentication, rate limiting, rewrite rules
+✅ Avoid exposing every service with a separate LoadBalancer
+
+🧠 In Simple Terms
+If Kubernetes services are rooms in a hotel, Ingress is the reception desk that:
+Accepts visitors
+Directs them to the correct room
+Ensures security (TLS, auth, etc.)
+****************************************************************************************************************************
+Path based routing based on Paths
+
+We need to install Ingress controller
+search ingress in google 
+Install ingress NGINX
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+kubectl delete -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+kubectl get svc -n ingress-nginx
+kubectl get pods -n ingress-nginx
+If we need to access app outside
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0
+
+We need to create ingress yml
+
+nano ingress.yml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop-ingress
+  namespace: online-shop
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - pathType: Prefix
+        path: /shop
+        backend:
+          service:
+            name: online-shop-svc
+            port:
+              number: 5173
+                 
+kubectl apply -f ingress.yml
+kubectl get ing -n online-shop
+kubectl get svc -n ingress-nginx 
+we will forward port
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0
+Now access online shop on browser by typing IP/shop
+
+create deployment apache 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: online-shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache
+  template:
+    metadata:
+      labels:
+        app: apache
+    spec:
+      containers:
+      - name: apache
+        image: httpd:latest
+        ports:
+        - containerPort: 80
+
+kubectl apply -f apache.yml
+kubectl get pods -n online-shop
+
+In order to access apache deployment we need a service
+create service.yml
+
+nano serviceapache.yml
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: apache-service
+  namespace: online-shop
+spec:
+  selector:
+    app: apache
+    ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+go to nano ingress.yml
+add new path in ingress.yml
+ - pathType: Prefix
+        path: /apache
+        backend:
+          service:
+            name: apache-service
+            port:
+              number: 80
+Now access application IP:shop/apache
+**************************************************************************************************************************
