@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: wordpress
-          image: techiescamp/wordpress-nginx:6.0.0
+          image: monudocker334/wordpress-nginx-k8s
           env:
             - name: DB_HOST
               value: mysql-service.wordpress.svc.cluster.local
