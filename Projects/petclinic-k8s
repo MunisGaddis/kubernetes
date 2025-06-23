@@ -142,3 +142,13 @@ SELECT * FROM owners;
 SELECT * FROM pets;
 kubectl delete -f .
 *****************************************************************************************************************
+You can delete all the resources in the workshop namespace using this command:
+
+kubectl delete all --all -n dev
+This will delete:
+
+All Pods
+All Services
+All Deployments
+All ReplicaSets
+Everything managed by kubectl get all
