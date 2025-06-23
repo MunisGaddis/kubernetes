@@ -37,6 +37,7 @@ kubectl apply -f frontend-service.yaml -n chat-app
 kubectl wait --for=condition=Ready pods -l app=frontend -n chat-app --timeout=120s
 
 Once the app is deployed, it's crucial to verify that everything is running smoothly.
+Check NodeIP:PORT on browser in Ubuntu VM Local
 
 # Check all resources
 kubectl get all -n chat-app
