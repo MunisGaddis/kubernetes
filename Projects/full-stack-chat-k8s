@@ -12,263 +12,54 @@ push to dockerhub :- docker push monudocker334/chatapp-frontend-k8s:latest
 rm -rf * 
 docker system prune -a
 *********************************************************************************
-create mkdir k8s
 cd k8s
-kubectl create namespace chat-app
+kubectl apply -f namespace.yaml
+kubectl apply -f mongo-pvc.yaml -n chat-app
+kubectl apply -f backend-secrets.yaml -n chat-app
+kubectl apply -f frontend-configmap.yaml -n chat-app
+kubectl apply -f mongodb-deployment.yaml -n chat-app
+kubectl apply -f mongodb-service.yaml -n chat-app
 
-nano backend-deployment.yml
+# Wait for MongoDB pod to be ready
+kubectl wait --for=condition=Ready pods -l app=mongodb -n chat-app --timeout=120s
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: backend-deployment
-  namespace: chat-app
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: backend
-  template:
-    metadata:
-      name: backend-pod
-      namespace: chat-app
-      labels:
-        app: backend
-    spec:
-      containers:
-      - name: chatapp-backend
-        image: monudocker334/chatapp-backend
-        ports:
-        - containerPort: 5001
-        env:
-        - name: NODE_ENV
-          value: production
-        - name: MONGODB_URI
-          value: mongodb://mongoadmin:secret@mongodb:27017/dbname?authSource=admin
-        - name: JWT_SECRET
-          valueFrom:
-            secretKeyRef:
-              name: chatapp-secrets
-              key: jwt
-        - name: PORT
-          value: "5001"
 
-**************************************************************
-nano backend-service.yml
+kubectl apply -f backend-deployment.yaml -n chat-app
+kubectl apply -f backend-service.yaml -n chat-app
 
-apiVersion: v1
-kind: Service
-metadata:
-   name: backend
-   namespace: chat-app
-spec:
-  selector:
-     app: backend
-  ports:
-  - port: 5001
-    targetPort: 5001
+# Wait for Backend pod to be ready
+kubectl wait --for=condition=Ready pods -l app=backend -n chat-app --timeout=120s
 
-***************************************************************
-nano frontend-deployment.yml
+# Deploy Frontend
+kubectl apply -f frontend-deployment.yaml -n chat-app
+kubectl apply -f frontend-service.yaml -n chat-app
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: frontend-deployment
-  namespace: chat-app
-  
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: frontend
-  template:
-    metadata:
-      labels:
-        app: frontend
-    spec:
-      containers:
-      - name: chatapp-frontend
-        image: monudocker334/chatapp-frontend
-        ports:
-        - containerPort: 80
-        env:
-        - name: NODE_ENV
-          value: production
+# Wait for Frontend pod to be ready
+kubectl wait --for=condition=Ready pods -l app=frontend -n chat-app --timeout=120s
 
-**************************************************************************
-nano frontend-service.yml
+Once the app is deployed, it's crucial to verify that everything is running smoothly.
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend
-  namespace: chat-app
-spec:
-  selector:
-    app: frontend
-  ports:
-    - port: 80
-      targetPort: 80
+# Check all resources
+kubectl get all -n chat-app
 
-****************************************************************************
-nano mongodb-deployment.yml
+# Check pod logs if needed
+kubectl logs -f -l app=frontend -n chat-app
+kubectl logs -f -l app=backend -n chat-app
+kubectl logs -f -l app=mongodb -n chat-app
+```
+## Accessing the Application
 
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mongodb-deployment
-  namespace: chat-app
-  
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mongodb
-  template:
-    metadata:
-      name: mongodb-pod
-      labels:
-        app: mongodb
-    spec:
-      containers:
-      - name: chatapp-mongodb  # Fixed typo from "momgodb"
-        image: mongo:latest
-        ports:
-        - containerPort: 27017
-        env:
-        - name: MONGO_INITDB_ROOT_USERNAME
-          value: mongoadmin
-        - name: MONGO_INITDB_ROOT_PASSWORD
-          value: secret
-        volumeMounts:           # You missed mounting the volume in the container
-        - name: mongo-data
-          mountPath: /data/db
-      volumes:
-      - name: mongo-data
-        persistentVolumeClaim:  # Fixed spelling from "persistenbtVolumeClaim"
-          claimName: mongodb-pvc
-  
-***********************************************************************************
+The application is exposed through NodePort services:
+http://localhost:8080
 
-nano mongodb-pv.yml
+You can verify the service URLs using:
 
-apiVersion: v1
-kind: PersistentVolume
-metadata:
-  name: mongodb-pv
-  namespace: chat-app
-spec:
-  accessModes:
-    - ReadWriteOnce
-  capacity:
-    storage: 5Gi
-  hostPath:
-    path: /data
+# Get service details
+kubectl get svc -n chat-app
 
-************************************************************************************
-nano mongodb-pvc.yml
 
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: mongodb-pvc
-  namespace: chat-app
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
+### 🔍 Describe a Pod
 
-****************************************************************************************
-nano mongodb-service.yml
+If a pod isn’t working as expected, you can describe it to get more information:
 
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongodb
-  namespace: chat-app
-spec:
-  selector:
-    app: mongodb
-  ports:
-  - port: 27017
-    targetPort: 27017
-
-***************************************************************************************
-kubectl port-forward service/backend -n chat-app 5001:50001 &
-sudo -E kubectl port-forward service/frontend -n chat-app 80:80 &
-
-access frontend localhost:80
-access localhost:5001
-****************************************************************************************
-create JWT secret key online
-JWT is big key so we will create secret.yml
-
-nano secrets.yml
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: chatapp-secret
-  namespace: chat-app
-type: Opaque
-data:
-  jwt: create jwt key and convert to online base64 decode and paste
-**************************************************************************************** 
-
-if we want to run externally
-sudo nano etc/hosts
-add 127.0.0.1     chat-tws.com
-
-minikube addons enable ingress
-******************************************************************************************
-now create frontend-ingress.yml
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: chatapp-ingress
-  namespace: chat-app
-  labels:
-    name: chatapp-ingress
-spec:
-  rules:
-  - host: chat-tws.com
-    http: # This should be inside the host rule
-      paths:
-      - path: "/"
-        pathType: Prefix
-        backend:
-          service:
-            name: frontend
-            port:
-              number: 80
-
-******************************************************************************************
-Create backend-ingress.yml
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: chatapp-ingress
-  namespace: chat-app
-  labels:
-    name: chatapp-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "false"
-spec:
-  rules:
-  - host: chat-tws.com
-    http:   # This should be indented under the host
-      paths:
-      - path: /api
-        pathType: Prefix
-        backend:
-          service:
-            name: backend
-            port:
-              number: 5001
-*******************************************************************************************
+kubectl describe pod <pod-name> -n chat-app
