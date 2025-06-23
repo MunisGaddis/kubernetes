@@ -62,7 +62,7 @@ kubectl get svc -n chat-app
 If a pod isn’t working as expected, you can describe it to get more information:
 kubectl describe pod <pod-name> -n chat-app
 ********************************************************************************************
-kubectl delete all --all -n workshop
+kubectl delete all --all -n chat-app
 This will delete:
 
 All Pods
