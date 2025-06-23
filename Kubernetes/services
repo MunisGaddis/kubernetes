@@ -49,22 +49,25 @@ kind: Deployment
 metadata:
   name: nginx-deployment
   namespace: nginx-ns
+
 spec:
   replicas: 1
   selector:
     matchLabels:
       app: nginx
+
   template:
     metadata:
       labels:
         app: nginx
+
     spec:
       containers:
       - name: nginx
         image: nginx:latest
         ports:
         - containerPort: 80
----
+***************************************************************************************************
 apiVersion: v1
 kind: Service
 metadata:
@@ -75,22 +78,33 @@ spec:
     app: nginx
   ports:
     - protocol: TCP
-      port: 82         # Service port
-      targetPort: 80   # Pod's container port
+      port: 82        # Port exposed by the service inside the cluster
+      targetPort: 80  # Port on the pod
+      nodePort: 30082 # Optional: specify NodePort or let Kubernetes assign
+  type: NodePort
 ********************************************************************************
 add type in yml 
 type : ClusterIP or External or NodePort
-kubectl apply -f nginx-setup.yml
+kubectl apply -f deployment.yml
+kubectl apply -f service.yml
 kubectl get pods -n nginx-ns -o wide
 kubectl get svc -n nginx-ns
 **********************************************************************************
 nginx is running on port 82
-We need to foward port in order to run nginx
+if we use ClusterIP We need to foward port in order to run nginx
+kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82
+access nginx : http://localhost:82
+
+if we are using AWS ubuntu VM
 kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
+
 if permision denied then give -E environment
 sudo -E kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
+
 Now access IP:Port on browser
 kubectl scale deployment nginx-deployment -n nginx-ns --replicas=10
+kubectl get pods -n nginx-ns
+
 Now all pods will handle traffic
 kubectl scale deployment nginx-deployment -n nginx-ns --replicas=0
 Now no one will be able to access nginx application
