@@ -55,3 +55,14 @@ kubectl apply -f .
 kubectl port-forward service/notes-app-service -n notes-app 8000:8000
 Access notes app in ubuntu VM local : localhost:8000
 kubectl delete -f .
+*************************************************************************************************************
+You can delete all the resources in the workshop namespace using this command:
+
+kubectl delete all --all -n notes-app
+This will delete:
+
+All Pods
+All Services
+All Deployments
+All ReplicaSets
+Everything managed by kubectl get all
