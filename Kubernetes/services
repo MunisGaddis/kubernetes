@@ -122,3 +122,27 @@ docker rm container id
 mkdir k8s
 cd k8s
 
+Recommended Apply Sequence:
+kind-cluster.yaml
+(Only if you're setting up a KinD cluster from scratch)
+
+namespace.yml
+(Ensure the namespace exists before applying resources that use it)
+
+configmap.yml
+(Configuration needs to exist before the deployment uses it)
+
+service.yml
+(Safe to apply early; can exist before pods)
+
+deployment.yml
+(Pods will use the configmap and be exposed by the service)
+
+hpa.yml
+(Horizontal Pod Autoscaler should target a running deployment)
+
+ingress-nginx-values.yml
+(Typically used with Helm to install nginx ingress controller)
+
+ingress.yml
+(Expose your service via ingress; should apply after ingress controller is available)
