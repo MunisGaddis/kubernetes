@@ -1,0 +1,125 @@
+Building a Docker image, pushing it to a registry, and deploying the containerized application on a Kubernetes cluster.
+
+mkdir k8s && cd k8s
+
+Create a file named app.js:
+
+// app.js
+const http = require('http');
+const port = process.env.PORT || 3000;
+
+const server = http.createServer((req, res) => {
+  res.statusCode = 200;
+  res.setHeader('Content-Type', 'text/plain');
+  res.end('Hello, Kubernetes!\n');
+});
+
+server.listen(port, () => {
+  console.log(`Server running at http://localhost:${port}/`);
+});
+*****************************************************************************************************************************
+Create a package.json file:
+
+{
+  "name": "my-app",
+  "version": "1.0.0",
+  "description": "A simple Node.js app",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js"
+  },
+  "dependencies": {}
+}
+*******************************************************************************************************************************
+Install dependencies:
+npm install
+
+Create a Dockerfile:
+
+# Use Node.js base image
+FROM node:14
+
+# Set working directory
+WORKDIR /usr/src/app
+
+# Copy application files
+COPY package*.json ./
+COPY app.js ./
+
+# Install dependencies
+RUN npm install
+
+# Expose port
+EXPOSE 3000
+
+# Start the app
+CMD ["npm", "start"]
+***********************************************************************************************************************************
+Build the Docker image:
+
+docker build -t monudocker334/node-js-k8s:latest .
+Verify the image:
+docker images
+
+Push the Image to a Registry
+Tag the image for a container registry (e.g., Docker Hub or a private registry):
+
+Push the image:
+docker push monudocker334/node-js-k8s:latest
+
+Deploy the Application on Kubernetes
+
+Create a Kubernetes manifest file deployment.yaml:
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: monudocker334/node-js-k8s:latest
+        ports:
+        - containerPort: 3000
+***************************************************************************************************************************************
+Apply the manifest:
+kubectl apply -f deployment.yaml
+
+Expose the deployment as a service:
+kubectl expose deployment my-app-deployment --type=NodePort --port=3000
+
+Access the Application
+Get the NodePort:
+kubectl get svc
+
+Access the app in your browser or via curl:
+curl http://<node-ip>:<node-port>
+
+Check the Deployment
+kubectl get deployments
+kubectl describe deployment my-app-deployment
+
+Check the Pods
+kubectl get pods
+
+Scale to 5 replicas:
+kubectl scale deployment my-app-deployment --replicas=5
+
+Verify the updated pods:
+kubectl get pods
+
+Cleanup
+To remove the resources:
+kubectl delete deployment my-app-deployment
+kubectl delete service my-app-deployment
+
+By following this process, you build a Docker image, push it to a registry, and deploy it on a Kubernetes cluster. You can adapt the application, Dockerfile, and Kubernetes manifests to suit your needs.
