@@ -39,7 +39,7 @@ Kubernetes Service
 
 Full YAML: Namespace, Deployment, and Service
 *********************************************************
-apiVersion: v1
+apiVersion: apps/v1
 kind: Namespace
 metadata:
   name: nginx-ns
