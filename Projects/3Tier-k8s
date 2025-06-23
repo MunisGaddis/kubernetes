@@ -1,0 +1,34 @@
+git clone https://github.com/Aakibgithuber/Three-tier-Application-Deployment-.git
+
+cd Three-tier-Application-Deployment-
+cd backend 
+docker build -t monudocker334/3tier-backend-k8s:latest
+docker push monudocker334/3tier-backend-k8s:latest
+
+cd frontend
+docker build -t monudocker334/3tier-frontend-k8s:latest
+docker push monudocker334/3tier-frontend-k8s:latest
+
+docker rmi image name
+******************************************************************************************
+cd to k8s_manifests
+kubectl apply -f .
+
+Change the Service to NodePort (Quick Access)
+This will make your frontend accessible using the Node's IP and a specific port.
+
+kubectl patch service frontend -n workshop -p '{"spec": {"type": "NodePort"}}'
+Then check the assigned port:
+kubectl get service frontend -n workshop
+
+In this case, your app would be accessible at:
+http://<NodeIP>:31234
+
+You can get the Node's IP using:
+kubectl get nodes -o wide
+
+Use Port Forwarding (Quick, Temporary)
+Run this command to access localhost:port
+kubectl port-forward service/frontend 3000:3000 -n workshop
+Then open:
+http://localhost:3000
