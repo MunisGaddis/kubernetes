@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nginx-html
+  namespace: persistent-server
+data:
+  index.html: |
+    <html>
+    <head><title>Persistent Nginx</title></head>
+    <body>
+      <h1>Success! This is persistent HTML!</h1>
+    </body>
+    </html>
