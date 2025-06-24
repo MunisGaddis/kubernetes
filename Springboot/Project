@@ -1,0 +1,35 @@
+Deploying Spring Boot application on Kubernetes
+
+install conntrack -y
+install git -y
+git clone https://github.com/SushantOps/SpringBootOnK8S_PS.git
+
+kubectl get pods
+kubectl create -f db-deployment.yaml
+kubectl get pods
+kubectl exec -it <POD_NAME>/bin/bash
+mysql -u root -p
+Enter Password
+
+docker build -t monudocker334/springboot-app-k8s:latest .
+docker push monudocker334/springboot-app-k8s:latest
+kubectl apply -f app-deployment.yaml
+kubectl get pods
+kubectl get svc
+
+kubectl port-forward --address 0.0.0.0 svc/springboot-crud-svc 8080:8080 &
+
+Now go to the database in the server and check the entries done by you in the SQL database.
+kubectl exec -it <mysql_pod_name>/bin/bash
+
+Now we will open the Dashboard of K8S. Inside EC2 our minikube is running so we are setting
+a proxy for all the local address.The proxy server is started on port 8001.
+kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'
+
+Now open another terminal and run below command.
+minikube dashboard
+
+http://127.0.0.1:34927/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/
+change the IP address to your IP address and port mention as 8001
+
+http://54.190.118.228:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/
