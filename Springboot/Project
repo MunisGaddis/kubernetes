@@ -17,6 +17,10 @@ kubectl apply -f app-deployment.yaml
 kubectl get pods
 kubectl get svc
 
+If using Local VM
+kubectl port-forward svc/springboot-crud-svc 8080:8080 &
+
+if you are using AWS run below command
 kubectl port-forward --address 0.0.0.0 svc/springboot-crud-svc 8080:8080 &
 
 Now go to the database in the server and check the entries done by you in the SQL database.
@@ -24,6 +28,11 @@ kubectl exec -it <mysql_pod_name>/bin/bash
 
 Now we will open the Dashboard of K8S. Inside EC2 our minikube is running so we are setting
 a proxy for all the local address.The proxy server is started on port 8001.
+
+if using local machine
+kubectl proxy --accept-hosts='^*$'
+
+if using AWS
 kubectl proxy --address='0.0.0.0' --accept-hosts='^*$'
 
 Now open another terminal and run below command.
