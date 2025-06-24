@@ -4,6 +4,7 @@ cd kubernetes-mongodb
 Recommended Apply Order:
 mongodb-secrets.yaml
 Reason: Secrets should be available before the Deployment uses them (for credentials, etc.).
+
 Decoding contents of Secret objects
 Kubernetes stores the content of all secrets in a base 64 encoded format.
 If you want to see how your string will appear in a base64 format, execute the following.
@@ -30,6 +31,13 @@ Reason: The Service exposes the MongoDB Deployment after it is up.
 mongodb-client.yaml
 Reason: This is typically a Pod or Job that connects to MongoDB, which should only happen after MongoDB is ready and accessible.
 ************************************************************************************************************************************
+kubectl apply -f mongodb-secrets.yaml
+kubectl apply -f mongodb-pv.yaml
+kubectl apply -f mongodb-pvc.yaml
+kubectl apply -f mongodb-deployment.yaml
+kubectl apply -f mongodb-nodeport-svc.yaml
+kubectl apply -f mongodb-client.yaml
+**************************************************************************************************************************************
 To see minikube IP or service URLs, use the following commands
 minikube ip
 minikube service --url mongo-nodeport-svc
