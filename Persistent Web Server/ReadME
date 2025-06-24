@@ -1,0 +1,30 @@
+# Persistent Nginx Web Server (Namespace: persistent-server)
+
+## 🧾 Resources Included
+
+- `ConfigMap` with HTML
+- `PersistentVolume` and `PersistentVolumeClaim`
+- `Deployment` with an `initContainer`
+- `NodePort` Service
+
+## 🚀 Deployment Instructions
+
+```bash
+kubectl apply -f namespace.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f pv-pvc.yaml
+kubectl apply -f deployment.yaml
+kubectl apply -f service.yaml
+
+🌐 Access Web Page
+kubectl port-forward -n persistent-server svc/nginx-service 8080:80
+Go to http://localhost:8080
+
+🔁 To Test Persistence:
+kubectl delete pod -n persistent-server -l app=nginx-persistent
+
+kubectl delete pod nginx-persistent
+kubectl apply -f nginx-persistent.yaml
+kubectl port-forward pod/nginx-persistent 8080:80
+curl http://localhost:8080
+Check the site again — the HTML should persist!
