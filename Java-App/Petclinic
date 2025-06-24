@@ -3,12 +3,32 @@ https://github.com/spring-projects/spring-petclinic.git
 Now, CD into the spring-petclinic directory and run the below command to build the application using maven.
 mvn clean install
 If you want to skip the test during the build, use the -DskipTests flag 
-mvn clean install -DskipTests flag
+mvn clean install -DskipTests 
 
-docker build -t techiescamp/kube-petclinic-app:3.0.0 .
-docker push techiescamp/kube-petclinic-app:3.0.0
+Install JDK 17 (if needed)
+On Ubuntu/Debian:
+
+sudo apt update
+sudo apt install openjdk-17-jdk
+
+Set JAVA_HOME properly
+Make sure your environment variable is pointing to the right JDK:
+export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+export PATH=$JAVA_HOME/bin:$PATH
+
+Now run mvn clean install
+
+Create Docker file 
+
+FROM techiescamp/jre-17:1.0.0
+COPY /target/*.jar /app/java.jar
+EXPOSE 8080
+
+docker build -t monudocker334/kube-petclinic-app:latest .
+docker push monudocker334/kube-petclinic-app:latest
 
 git clone https://github.com/techiescamp/kubernetes-projects.git
+cd kubernetes-projects
 cd 03-java-app-deployment
 
 Create Namespaces
