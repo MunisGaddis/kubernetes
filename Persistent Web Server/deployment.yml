@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-persistent
+  namespace: persistent-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx-persistent
+  template:
+    metadata:
+      labels:
+        app: nginx-persistent
+    spec:
+      volumes:
+        - name: html-storage
+          persistentVolumeClaim:
+            claimName: nginx-pvc
+        - name: html-source
+          configMap:
+            name: nginx-html
+      initContainers:
+        - name: copy-html
+          image: busybox
+          command: ["sh", "-c", "cp /source/index.html /usr/share/nginx/html/"]
+          volumeMounts:
+            - name: html-storage
+              mountPath: /usr/share/nginx/html
+            - name: html-source
+              mountPath: /source
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: html-storage
+              mountPath: /usr/share/nginx/html
