@@ -114,6 +114,8 @@ spec:
             port:
               number: 3000
 *****************************************************************************************************************************************
+kubectl apply -f ingress.yml
+
 Expose the app
 First We need to expose our deployment so use 
 kubectl expose deployment reddit-clone-deployment --type=NodePort command.
