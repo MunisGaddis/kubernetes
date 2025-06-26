@@ -69,8 +69,8 @@ spec:
   selector:
     app: reddit-app
 *********************************************************************************************************
-kubectl apply -f Deployment.yml
-kubectl apply -f Service.yml
+kubectl apply -f deployment.yml
+kubectl apply -f service.yml
 
 If You want to check your deployment & Service use the command 
 kubectl get deployment 
