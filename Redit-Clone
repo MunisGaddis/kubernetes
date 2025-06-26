@@ -34,22 +34,22 @@ Write a Kubernetes Manifest File
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: reddit-deployment
+  name: reddit-clone-deployment
   labels:
-    app: reddit-app
+    app: reddit-clone
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: reddit-app
+      app: reddit-clone
   template:
     metadata:
       labels:
-        app: reddit-app
+        app: reddit-clone
     spec:
       containers:
-      - name: reddit-app
-        image: monudocker334/reddit-app:latest
+      - name: reddit-clone
+        image: trainwithshubham/reddit-clone
         ports:
         - containerPort: 3000
 ******************************************************************************************************
@@ -58,9 +58,9 @@ Write service.yml file
 apiVersion: v1
 kind: Service
 metadata:
-  name: reddit-service
+  name: reddit-clone-service
   labels:
-    app: reddit-app
+    app: reddit-clone
 spec:
   type: NodePort
   ports:
@@ -68,7 +68,7 @@ spec:
     targetPort: 3000
     nodePort: 31000
   selector:
-    app: reddit-app
+    app: reddit-clone
 *************************************************************************************************************************************
 kubectl apply -f deployment.yml
 kubectl apply -f service.yml
@@ -123,7 +123,7 @@ spec:
         path: "/test"
         backend:
           service:
-            name: reddit-service
+            name: reddit-clone-service
             port:
               number: 3000
   - host: "*.domain.com"
@@ -133,9 +133,10 @@ spec:
         path: "/test"
         backend:
           service:
-            name: reddit-service
+            name: reddit-clone-service
             port:
               number: 3000
+
 *****************************************************************************************************************************************
 kubectl apply -f ingress.yml
 
