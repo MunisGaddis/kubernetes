@@ -73,7 +73,7 @@ spec:
 kubectl apply -f deployment.yml
 kubectl apply -f service.yml
 
-minikube service reddit-service --url
+minikube service reddit-clone-service --url
 You can test your deployment using curl -L http://192.168.49.2:31000. 
 
 If You want to check your deployment & Service use the command 
@@ -81,12 +81,7 @@ kubectl get deployment
 kubectl get services
 
 if we want to run app on browser we need to expose port
-
-kubectl expose deployment reddit-deployment --type=NodePort
-
-Expose the app
-First We need to expose our deployment so use 
-kubectl expose deployment reddit-clone-deployment --type=NodePort command.
+kubectl expose deployment reddit-clone-deployment --type=NodePort
 
 Then We have to expose our app service if using AWS Instance
 kubectl port-forward svc/reddit-clone-service 3000:3000 --address 0.0.0.0 &
@@ -100,6 +95,7 @@ minikube addons enable ingress
 
 Wait for ingress controller to be ready
 Use this command to check pod status:
+
 kubectl wait --namespace ingress-nginx \
   --for=condition=Ready pod \
   --selector=app.kubernetes.io/component=controller \
