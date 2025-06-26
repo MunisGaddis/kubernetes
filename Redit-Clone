@@ -1,4 +1,5 @@
-Deploy a Redit Clone with Kubernetes Ingress
+Deploy a Redit Clone with Kubernetes Ingress minikube
+
 git clone https://github.com/LondheShubham153/reddit-clone-k8s-ingress.git
 
 cd reddit-clone-k8s-ingress
@@ -47,7 +48,7 @@ spec:
         app: reddit-app
     spec:
       containers:
-      - name: reddit-clone
+      - name: reddit-app
         image: monudocker334/reddit-app:latest
         ports:
         - containerPort: 3000
@@ -68,15 +69,34 @@ spec:
     nodePort: 31000
   selector:
     app: reddit-app
-*********************************************************************************************************
+*************************************************************************************************************************************
 kubectl apply -f deployment.yml
 kubectl apply -f service.yml
+
+minikube service reddit-service --url
+You can test your deployment using curl -L http://192.168.49.2:31000. 
 
 If You want to check your deployment & Service use the command 
 kubectl get deployment 
 kubectl get services
+
+if we want to run app on browser we need to expose port
+
+kubectl expose deployment reddit-deployment --type=NodePort
+
+Expose the app
+First We need to expose our deployment so use 
+kubectl expose deployment reddit-clone-deployment --type=NodePort command.
+
+Then We have to expose our app service if using AWS Instance
+kubectl port-forward svc/reddit-clone-service 3000:3000 --address 0.0.0.0 &
+
+If using local VM
+kubectl port-forward svc/reddit-clone-service 3000:3000 &
 *************************************************************************************************************************************
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
+ or 
+minikube addons enable ingress
 
 Wait for ingress controller to be ready
 Use this command to check pod status:
@@ -103,7 +123,7 @@ spec:
         path: "/test"
         backend:
           service:
-            name: reddit-clone-service
+            name: reddit-service
             port:
               number: 3000
   - host: "*.domain.com"
@@ -119,18 +139,8 @@ spec:
 *****************************************************************************************************************************************
 kubectl apply -f ingress.yml
 
-Expose the app
-First We need to expose our deployment so use 
-kubectl expose deployment reddit-clone-deployment --type=NodePort command.
+curl -L domain.com/test
 
-You can test your deployment using curl -L http://192.168.49.2:31000. 
-192.168.49.2 is a minikube ip & Port 31000 is defined in Service.yml
-Then We have to expose our app service if using AWS Instance
-
-kubectl port-forward svc/reddit-clone-service 3000:3000 --address 0.0.0.0 &
-If using local VM
-kubectl port-forward svc/reddit-clone-service 3000:3000 &
-**********************************************************************************************************************************************
 Step 1: Delete the Ingress Controller
 kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
 
