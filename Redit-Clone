@@ -154,11 +154,11 @@ curl -L domain.com/test
 Step 1: Delete the Ingress Controller
 kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
 
+if using minikube
+minikube addons disable ingress
+
 Or delete the namespace directly:
 kubectl delete namespace ingress-nginx
-
-Delete Kind Cluster
-kind delete cluster --name my-cluster
 
 kubectl delete -f .
 ***********************************************************************************************************************************************
