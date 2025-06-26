@@ -138,6 +138,19 @@ kubectl apply -f ingress.yml
 
 curl -L domain.com/test
 
+Access the Ingress via curl
+curl -L domain.com/test
+But this will only work if the domain domain.com resolves to your Minikube IP. Since domain.com is a placeholder, you must set it up locally:
+
+🔧 Map domain.com to Minikube IP (Local Setup)
+1. Get Minikube IP:
+minikube ip
+192.168.49.2
+
+Edit your sudo nano /etc/hosts 
+192.168.49.2 domain.com
+curl -L domain.com/test
+*************************************************************************************************************************************************
 Step 1: Delete the Ingress Controller
 kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
 
