@@ -85,6 +85,9 @@ kubectl wait --namespace ingress-nginx \
   --selector=app.kubernetes.io/component=controller \
   --timeout=90s
 
+Check if the ingress controller is installed and running
+kubectl get pods -n ingress-nginx
+
 Let's write ingress.yml and put the following code in it:
 
 apiVersion: networking.k8s.io/v1
