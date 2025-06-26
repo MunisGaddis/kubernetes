@@ -1,0 +1,141 @@
+Deploy a Redit Clone with Kubernetes Ingress
+git clone https://github.com/LondheShubham153/reddit-clone-k8s-ingress.git
+
+cd reddit-clone-k8s-ingress
+
+Login into Docker 
+
+rm -v Dockerfile
+
+Write a Dockerfile with the following code:
+
+*********************************************************************************************
+FROM node:19-alpine3.15
+
+WORKDIR /reddit-clone
+
+COPY . /reddit-clone
+
+RUN npm install 
+
+EXPOSE 3000
+
+CMD ["npm","run","dev"]
+********************************************************************************************
+Building Docker-Image
+docker build -t <DockerHub_Username>/<Imagename> .
+
+Push the Image To DockerHub
+docker push <DockerHub_Username>/<Imagename>
+**********************************************************************************************
+Write a Kubernetes Manifest File
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reddit-clone-deployment
+  labels:
+    app: reddit-clone
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reddit-clone
+  template:
+    metadata:
+      labels:
+        app: reddit-clone
+    spec:
+      containers:
+      - name: reddit-clone
+        image: trainwithshubham/reddit-clone
+        ports:
+        - containerPort: 3000
+******************************************************************************************************
+Write Service.yml file
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: reddit-clone-service
+  labels:
+    app: reddit-clone
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 31000
+  selector:
+    app: reddit-clone
+*********************************************************************************************************
+kubectl apply -f Deployment.yml
+kubectl apply -f Service.yml
+
+If You want to check your deployment & Service use the command 
+kubectl get deployment 
+kubectl get services
+*************************************************************************************************************************************
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
+
+Wait for ingress controller to be ready
+Use this command to check pod status:
+kubectl wait --namespace ingress-nginx \
+  --for=condition=Ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+Let's write ingress.yml and put the following code in it:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-reddit-app
+spec:
+  rules:
+  - host: "domain.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/test"
+        backend:
+          service:
+            name: reddit-clone-service
+            port:
+              number: 3000
+  - host: "*.domain.com"
+    http:
+      paths:
+      - pathType: Prefix
+        path: "/test"
+        backend:
+          service:
+            name: reddit-clone-service
+            port:
+              number: 3000
+*****************************************************************************************************************************************
+Expose the app
+First We need to expose our deployment so use 
+kubectl expose deployment reddit-clone-deployment --type=NodePort command.
+You can test your deployment using curl -L http://192.168.49.2:31000. 
+192.168.49.2 is a minikube ip & Port 31000 is defined in Service.yml
+Then We have to expose our app service if using AWS Instance
+kubectl port-forward svc/reddit-clone-service 3000:3000 --address 0.0.0.0 &
+If using local VM
+kubectl port-forward svc/reddit-clone-service 3000:3000 &
+**********************************************************************************************************************************************
+Step 1: Delete the Ingress Controller
+kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
+
+Or delete the namespace directly:
+kubectl delete namespace ingress-nginx
+
+Delete Kind Cluster
+kind delete cluster --name my-cluster
+
+kubectl delete -f .
+***********************************************************************************************************************************************
+
+
+
+
