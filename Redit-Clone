@@ -110,7 +110,7 @@ spec:
         path: "/test"
         backend:
           service:
-            name: reddit-clone-service
+            name: reddit-service
             port:
               number: 3000
 *****************************************************************************************************************************************
