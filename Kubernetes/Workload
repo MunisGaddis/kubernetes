@@ -96,7 +96,10 @@ kubectl get deployment -n nginx-ns
 kubectl get pods -n nginx-ns
 To continuously watch the status of pods in the nginx-ns namespace, use:
 To refresh every 1 second:
+
 watch -n 1 kubectl get pods -n nginx-ns
+or
+kubectl get pods -n nginx-ns -w
 
 This command scales a Kubernetes deployment to a desired number of replicas (pods).
 kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=10
@@ -109,7 +112,7 @@ kubectl get pods -n nginx-ns -o wide (to get more information about pod)
 Currently all pods are running on latest nginx
 Go to deployment.yml and change nginx version : 1.27.5
 Roll out Command :- 
-kubectl set image deployment/nginx-deployment nginx=nginx:nginx-1.27.5 -n nginx-ns 
+kubectl set image deployment/nginx-deployment nginx=nginx:1.14.2 -n nginx-ns 
 check pods 
 kubectl get pods -n nginx-ns 
 kubectl delete deployment nginx-deployment -n nginx-ns
