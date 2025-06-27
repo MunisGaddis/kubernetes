@@ -129,20 +129,166 @@ kind-cluster.yaml
 namespace.yml
 (Ensure the namespace exists before applying resources that use it)
 
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: online-shop-prod
+  labels:
+    environment: production
+***************************************************************************************************************
 configmap.yml
 (Configuration needs to exist before the deployment uses it)
 
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: online-shop-config
+  namespace: online-shop-prod
+data:
+  NODE_ENV: "production"
+  HOST: "0.0.0.0"
+  PORT: "5173"
+  VITE_HOST: "0.0.0.0"
+***************************************************************************************************************
 service.yml
 (Safe to apply early; can exist before pods)
 
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+spec:
+  selector:
+    app: online-shop
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+****************************************************************************************************************
 deployment.yml
 (Pods will use the configmap and be exposed by the service)
 
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: online-shop
+  template:
+    metadata:
+      labels:
+        app: online-shop
+    spec:
+      containers:
+      - name: online-shop
+        image: online_shop:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: online-shop-config
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+****************************************************************************************************************
 hpa.yml
 (Horizontal Pod Autoscaler should target a running deployment)
-
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: online-shop
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+****************************************************************************************************************
 ingress-nginx-values.yml
 (Typically used with Helm to install nginx ingress controller)
-
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-nginx-controller
+  namespace: ingress-nginx
+spec:
+  type: NodePort
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+    nodePort: 30080
+  - name: https
+    port: 443
+    protocol: TCP
+    targetPort: https
+    nodePort: 30443
+  selector:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx
+***************************************************************************************************************
 ingress.yml
 (Expose your service via ingress; should apply after ingress controller is available)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: online-shop.iemafzalhassan.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
+**************************************************************************************************************
