@@ -176,6 +176,11 @@ resources:
 kubectl top pod -n nginx-ns
 
 Add Health Probes:
+Liveness Probe checks whether the container is still alive.
+If it fails repeatedly, Kubernetes restarts the container.
+
+Readiness Probe checks whether the container is ready to serve traffic.
+If it fails, Kubernetes removes the pod from the Service endpoints (stops sending traffic), but does not restart the container.
 
 livenessProbe:
   httpGet:
