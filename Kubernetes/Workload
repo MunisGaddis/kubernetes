@@ -155,6 +155,12 @@ Creates 3 Pods running nginx.
 If a Pod fails, it gets replaced.
 No update strategy—just ensures the count.
 
+kubectl apply -f replicaset.yml
+kubectl get pods -n nginx-ns
+kubectl delete pod nginx-replicaset-8l2kn -n nginx-ns
+
+Get Pods and see if new pod created automatically
+kubectl get pods -n nginx-ns
 Replica will run 2 Pods now delete 1 pod and watch if replicaset create new pod automatically
 
 Add Resource Requests/Limits:
