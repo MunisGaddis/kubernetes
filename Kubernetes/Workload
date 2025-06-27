@@ -88,6 +88,10 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+****************************************************************************************************************
+Creates a ReplicaSet internally.
+Supports rolling updates (e.g., upgrading image version).
+Supports rollback if needed.
 ************************************************************************************************************************************
 This checks for syntax or validation issues without actually creating the deployment.
 kubectl apply -f deployment.yml --dry-run=client 
@@ -146,6 +150,10 @@ spec:
         image: nginx:latest
         ports:
         - containerPort: 80
+
+Creates 3 Pods running nginx.
+If a Pod fails, it gets replaced.
+No update strategy—just ensures the count.
 
 Replica will run 2 Pods now delete 1 pod and watch if replicaset create new pod automatically
 
