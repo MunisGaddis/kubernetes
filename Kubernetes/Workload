@@ -147,6 +147,8 @@ spec:
         ports:
         - containerPort: 80
 
+Replica will run 2 Pods now delete 1 pod and watch if replicaset create new pod automatically
+
 Add Resource Requests/Limits:
 
 resources:
@@ -241,4 +243,16 @@ spec:
         requests:
           storage: 1Gi
       storageClassName: "standard"  # Replace with your storage class
+****************************************************************************************************************
+Creates Pods with predictable names:
+nginx-0
+nginx-1
+nginx-2
+
+Each Pod gets its own persistent volume claim, e.g.,
+www-nginx-0
+www-nginx-1
+www-nginx-2
+
+Pods start and terminate in order.
 ********************************************************************************************************************************************
