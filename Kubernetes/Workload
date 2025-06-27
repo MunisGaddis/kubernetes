@@ -173,6 +173,8 @@ resources:
     memory: "64Mi"
     cpu: "250m"
 
+kubectl top pod -n nginx-ns
+
 Add Health Probes:
 
 livenessProbe:
