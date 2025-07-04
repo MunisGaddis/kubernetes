@@ -1,5 +1,11 @@
 🌱 KIND Cluster Setup Guide
 
+What is KinD?
+KinD (Kubernetes in Docker) is an open-source tool designed to enable running Kubernetes clusters locally using 
+Docker container “nodes.” KinD is especially useful for testing, CI/CD workflows, and temporary clusters where 
+you need an environment similar to a full-fledged Kubernetes cluster but don’t need all the bells and whistles 
+that come with it. KinD is quick to set up and tear down, making it ideal for various development and testing scenarios.
+
 Create and run this install script:
 
 #!/bin/bash
@@ -27,7 +33,7 @@ rm -f kubectl
 rm -rf kind
 
 echo "✅ KIND & kubectl installation complete."
-
+***********************************************************************************************
 2️⃣ Set up KIND Cluster
 📄 Create kind-cluster-config.yaml
 
@@ -40,7 +46,7 @@ nodes:
     image: kindest/node:v1.31.2
   - role: worker
     image: kindest/node:v1.31.2
-
+**************************************************************************************************************
 ▶ Create the cluster
 kind create cluster --config kind-cluster-config.yaml --name my-kind-cluster
 
@@ -93,12 +99,6 @@ http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kube
 5️⃣ Delete KIND Cluster
 kind delete cluster --name my-kind-cluster
 ***************************************************************************************************************************************************************************************************
-What is KinD?
-KinD (Kubernetes in Docker) is an open-source tool designed to enable running Kubernetes clusters locally using 
-Docker container “nodes.” KinD is especially useful for testing, CI/CD workflows, and temporary clusters where 
-you need an environment similar to a full-fledged Kubernetes cluster but don’t need all the bells and whistles 
-that come with it. KinD is quick to set up and tear down, making it ideal for various development and testing scenarios.
-
 Test the Cluster:
 kubectl get nodes
 kubectl config view
@@ -265,7 +265,6 @@ kubectl delete -f replicaset.yaml
 kubectl delete hpa my-replicaset
 *******************************************************************************************************************
 HandsOn 4: Kubernetes Deployments
-cks
 What is a Deployment?
 
 A Deployment in Kubernetes is a high-level construct that allows you to manage the desired state of Pods and ReplicaSets. 
@@ -273,7 +272,6 @@ Deployments offer features like zero-downtime updates, rollbacks, and scaling, m
 
 Part 1: Creating and Managing a Deployment
 Create a YAML file for the Deployment:
-
 nano deployment.yaml
 
 apiVersion: apps/v1
@@ -294,7 +292,6 @@ spec:
         - name: nginx
           image: nginx:1.19
 
-
 Check deployment:
 
 kubectl get deployments
@@ -302,7 +299,6 @@ kubectl get pods
 
 Describe the Deployment:
 kubectl describe deployment my-deployment
-
 
 Part 2: Updates and Rollbacks
 
@@ -320,7 +316,6 @@ kubectl rollout history deployment my-deployment
 Describe a Specific Revision : If you want more information about a specific revision, you can describe it as follows:
 kubectl rollout history deployment my-deployment --revision=1
 kubectl rollout history deployment my-deployment --revision=2
-
 
 Rollback the Deployment:
 kubectl rollout undo deployment my-deployment
@@ -462,7 +457,6 @@ spec:
         - --http-port
         - "8080"
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
@@ -500,9 +494,7 @@ spec:
   ports:
     - port: 8080
       targetPort: 8080
-
 ---
-
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
