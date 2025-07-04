@@ -1,0 +1,633 @@
+🌱 KIND Cluster Setup Guide
+
+Create and run this install script:
+
+#!/bin/bash
+# Install KIND
+if [ "$(uname -m)" = "x86_64" ]; then
+  curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.27.0/kind-linux-amd64
+  chmod +x ./kind
+  sudo mv ./kind /usr/local/bin/kind
+fi
+
+# Install kubectl
+VERSION="v1.30.0"
+URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
+INSTALL_DIR="/usr/local/bin"
+
+curl -LO "$URL"
+chmod +x kubectl
+sudo mv kubectl $INSTALL_DIR/
+
+# Verify kubectl installation
+kubectl version --client
+
+# Cleanup
+rm -f kubectl
+rm -rf kind
+
+echo "✅ KIND & kubectl installation complete."
+
+2️⃣ Set up KIND Cluster
+📄 Create kind-cluster-config.yaml
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.31.2
+  - role: worker
+    image: kindest/node:v1.31.2
+  - role: worker
+    image: kindest/node:v1.31.2
+
+▶ Create the cluster
+kind create cluster --config kind-cluster-config.yaml --name my-kind-cluster
+
+▶ Verify cluster
+kubectl get nodes
+kubectl cluster-info
+
+3️⃣ Access the Cluster
+kubectl cluster-info
+
+4️⃣ Set up Kubernetes Dashboard
+▶ Deploy Dashboard
+
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+📄 Create dashboard-admin-user.yml
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: admin-user
+    namespace: kubernetes-dashboard
+
+▶ Apply admin user config
+kubectl apply -f dashboard-admin-user.yml
+
+▶ Get access token
+kubectl -n kubernetes-dashboard create token admin-user
+✅ Copy this token — you'll need it to log in.
+
+▶ Start the proxy
+kubectl proxy
+🌐 Open your browser:
+http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/
+👉 Log in using the token.
+
+5️⃣ Delete KIND Cluster
+kind delete cluster --name my-kind-cluster
+***************************************************************************************************************************************************************************************************
+What is KinD?
+KinD (Kubernetes in Docker) is an open-source tool designed to enable running Kubernetes clusters locally using 
+Docker container “nodes.” KinD is especially useful for testing, CI/CD workflows, and temporary clusters where 
+you need an environment similar to a full-fledged Kubernetes cluster but don’t need all the bells and whistles 
+that come with it. KinD is quick to set up and tear down, making it ideal for various development and testing scenarios.
+
+Test the Cluster:
+kubectl get nodes
+kubectl config view
+kubectl get pods
+kubectl get replicaset
+kubectl get deployments
+kubectl get services
+*********************************************************************************************************************************************
+Hands-on 2 : Kubernetes Pods
+Introduction to Managing Kubernetes Pods: Imperative vs Declarative
+
+Managing resources in a Kubernetes cluster can be performed using two different approaches: Imperative and Declarative. 
+Both methods have their merits and are useful for different scenarios. The imperative approach involves directly interacting 
+with the cluster to create or manage resources using kubectl commands. The declarative approach, on the other hand, involves 
+defining the desired state in a configuration file and then applying it to the cluster.
+
+In this guide, we will walk through both approaches, focusing on the creation, management, and deletion of Kubernetes Pods. 
+The exercises are designed to provide hands-on experience and a deeper understanding of how to manage Kubernetes Pods effectively 
+using both imperative and declarative methods.
+
+Part 1: Imperative Approach
+In the imperative approach, we directly interact with the cluster to create, update, or delete resources. We’ll be using kubectl commands to achieve this.
+
+Create a Pod using the imperative command:
+kubectl run my-pod — image=nginx
+
+List the Pods to ensure it is running:
+kubectl get pods
+
+Describe the Pod:
+kubectl describe pod my-pod
+
+Delete the Pod:
+kubectl delete pod my-pod
+
+Part 2: Declarative Approach
+In the declarative approach, we define the desired state in a configuration file and then apply it to the cluster. We’ll be using YAML files to define the pod specifications.
+
+Step-by-step Instructions:
+Create a YAML file for the Pod:
+
+nano my-pod.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-declarative-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+
+Apply the YAML file to create the Pod:
+kubectl apply -f my-pod.yaml
+
+Describe the Pod:
+kubectl describe pod my-declarative-pod
+
+Delete the Pod using the YAML file:
+kubectl delete -f my-pod.yaml
+
+
+The terms “imperative” and “declarative” are often used to describe different approaches to configuring Kubernetes objects. 
+Both approaches enable you to accomplish the same end result but in different ways. Here’s a breakdown of each:
+
+Imperative Approach
+In the imperative approach, you explicitly specify the steps for Kubernetes to perform the desired action. It’s a command-driven approach, 
+much like running commands sequentially in a script to achieve a certain state. With imperative commands, you tell the Kubernetes system to “do this, then do that.”
+
+Direct Manipulation: You directly interact with the live objects in the cluster.
+Commands: kubectl create, kubectl run, kubectl expose, kubectl delete, etc.
+Use case: Good for development and single-use tasks.
+
+Example: kubectl run nginx-pod --image=nginx kubectl expose pod nginx-pod --name=nginx-service --port=80 --target-port=80
+
+Declarative Approach
+In the declarative approach, you declare the desired state in a configuration file, and Kubernetes makes the necessary 
+changes to achieve that state. You essentially tell Kubernetes, “Make it look like this.”
+
+Version Control: YAML files can be stored in version control, which enables better tracking, rollback, and collaboration.
+Commands: kubectl apply, kubectl delete -f, etc.
+
+Use case: Better for production and complex configurations.
+Example: apiVersion: v1 kind: Pod metadata: name: nginx-pod spec: containers: - name: nginx image: nginx
+Then apply it with:
+kubectl apply -f nginx-pod.yaml
+
+Summary
+Imperative: Explicit commands, better for development, and one-off tasks.
+Declarative: Configuration files, better for production, and version-controllable.
+Both approaches have their pros and cons, and the choice between the two often depends on your specific use case, the 
+complexity of your configuration, and how you manage your infrastructure. Some teams even use a mix of both.
+******************************************************************************************************************************************************************
+HandsOn 3: Kubernetes ReplicaSet
+
+What is a ReplicaSet?
+A ReplicaSet in Kubernetes ensures that a specified number of identical Pod replicas are running at any given time. 
+ReplicaSets are particularly useful for maintaining high availability, load distribution, and scaling of Pods. While 
+ReplicaSets themselves are often managed by higher-level constructs like Deployments, understanding how to manually create 
+and manage a ReplicaSet provides deeper insights into Kubernetes’ capabilities for ensuring application resilience and scalability.
+
+Part 1: Creating and Managing a ReplicaSet
+Create a YAML file for the ReplicaSet:
+
+nano replicaset.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-replicaset
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+
+
+Apply the file:
+kubectl apply -f replicaset.yaml
+
+Verify the ReplicaSet has been created and is managing 3 Pods:
+kubectl get replicaset
+
+Describe the replicaSet:
+kubectl describe replicaset my-replicaset
+Or:
+kubectl describe rs my-replicaset
+Try to delete a pod, it will recreate a new pod in order to keep 3 pods in the replicaSet:
+***************************************************************************************************************************
+Part 2: Scaling a ReplicaSet
+
+Scale the ReplicaSet manually by updating the YAML file
+
+Change the replicas field from 3 to 5 in yaml file.
+
+Apply the updated YAML file:
+
+kubectl apply -f replicaset.yaml
+
+Another way by running a command:
+kubectl scale replicaset my-replicaset — replicas=6
+
+Auto-scale the ReplicaSet (requires metrics server):
+Apply a Horizontal Pod Autoscaler (hpa):
+
+kubectl autoscale deployment my-replicaset --min=3 --max=10 --cpu-percent=70
+
+
+Verify:
+kubectl get hpa
+
+It will always obey the HPA, if you change the replicaSet to 2, it will recreate the third pod:
+
+Delete the HPA & ReplicaSet using the YAML file:
+kubectl delete -f replicaset.yaml
+kubectl delete hpa my-replicaset
+*******************************************************************************************************************
+HandsOn 4: Kubernetes Deployments
+cks
+What is a Deployment?
+
+A Deployment in Kubernetes is a high-level construct that allows you to manage the desired state of Pods and ReplicaSets. 
+Deployments offer features like zero-downtime updates, rollbacks, and scaling, making them an essential resource for managing stateless applications in a Kubernetes cluster.
+
+Part 1: Creating and Managing a Deployment
+Create a YAML file for the Deployment:
+
+nano deployment.yaml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:1.19
+
+
+Check deployment:
+
+kubectl get deployments
+kubectl get pods
+
+Describe the Deployment:
+kubectl describe deployment my-deployment
+
+
+Part 2: Updates and Rollbacks
+
+Update the Deployment (change nginx version from 19 to 21):
+
+Check the Rolling Update Status:
+kubectl rollout status deployment my-deployment
+
+Apply the updated YAML:
+kubectl apply -f deployment.yaml
+
+Check history:
+kubectl rollout history deployment my-deployment
+
+Describe a Specific Revision : If you want more information about a specific revision, you can describe it as follows:
+kubectl rollout history deployment my-deployment --revision=1
+kubectl rollout history deployment my-deployment --revision=2
+
+
+Rollback the Deployment:
+kubectl rollout undo deployment my-deployment
+
+Delete:
+kubectl delete -f deployment.yaml
+********************************************************************************************************************************************************
+HandsOn 5: Kubernetes Networking
+
+In Kubernetes, Services are the abstraction that allows pods to die and replicate without impacting the application. There are 
+various types of Services, and each serves a specific use case. In this guide, we’ll explore three types of Services — NodePort and 
+ClusterIP. We’ll break down the guide into multiple parts for easier understanding and implementation.
+
+Part 1: ClusterIP Service
+ClusterIP is the default type of Kubernetes Service. It provides a single IP address for the set of Pods the Service is pointing to.
+
+See the default ClusterIp:
+kubectl get svc
+
+Create a Simple Pod
+kubectl run nginx-pod --image=nginx --labels="app=nginx"
+
+Create a ClusterIP Service
+kubectl expose pod nginx-pod --name=nginx-clusterip --port=80 --target-port=80
+
+Test Connectivity to the Service within Cluster
+First, Create another pod:
+kubectl run busybox --image=busybox --restart=Never -it -- /bin/sh
+
+Then, within that pod check connectivity to nginx:
+wget -O- nginx-clusterip:80
+
+This command only works internally (in order for it to wok need NodePort):
+
+Part 2: NodePort Service
+NodePort is the most basic way to get external traffic directly to your service. NodePort, as the name implies, opens a specific port
+on all the Nodes, and any traffic that is sent to this port is forwarded to the service.
+
+Create a YAML File for the NodePort Service (Declarative Way)
+nano nginx-nodeport.yaml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-nodeport
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30000
+  selector:
+    app: nginx
+
+Apply the YAML File
+kubectl apply -f nginx-nodeport.yaml
+kubectl get svc nginx-nodeport
+
+Test the NodePorts
+Access the NodePorts on any node in your cluster by navigating to:
+wget -O- localhost:30000
+
+Update Security Group for EC2(allow port 30000):
+
+https://<EC2-public-ip>:30000
+
+Delete the resources created:
+kubectl delete -f nginx-nodeport.yaml
+kubectl delete pod nginx-pod
+kubectl delete pod busybox
+kubectl delete svc nginx-clusterip
+******************************************************************************************************************************************************
+Hands-on 5: Kubernetes Ingress
+Update Instance type to medium:
+
+Setting Up An Ingress Controller
+Guide: Setting up an Ingress Controller
+
+Step 1: Create a cluster Step 2: Deploy an Ingress controller (Ingress NGINX) Step 3: Deploy 2 Pods and 2 Services and 1 Ingress resourceStep 4: Testing Ingress
+
+Step 1: Create a cluster
+Create a cluster-ingress.yaml file with the following content:
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    kubeadmConfigPatches:
+      - |
+        kind: InitConfiguration
+        nodeRegistration:
+          kubeletExtraArgs:
+            node-labels: "ingress-ready=true"
+    extraPortMappings:
+      - containerPort: 80
+        hostPort: 80
+        protocol: TCP
+      - containerPort: 443
+        hostPort: 443
+        protocol: TCP
+
+Run the following commands:
+kind create cluster --config=cluster-ingress.yaml
+kubectl cluster-info --context kind-kind
+kubectl get nodes
+kubectl get svc
+kubectl get ns
+kubectl get all
+kubectl get pods
+kubectl get pods --all-namespaces
+kubectl get service --all-namespaces
+
+Step 2: Deploy an Ingress controller (Ingress NGINX)
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/kind/deploy.yaml
+
+kubectl get pods --all-namespaces
+kubectl get service --all-namespaces
+kubectl get pods --all-namespaces | grep nginx
+kubectl get service --all-namespaces | grep nginx
+
+Step 3: Deploy 2 Pods and 2 Services and 1 Ingress resource
+Guide: Using Ingress
+
+Create an ingress-nginx-example.yaml file:
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: store-app-pod
+  labels:
+    app: store
+spec:
+  containers:
+    - name: store-app
+      image: registry.k8s.io/e2e-test-images/agnhost:2.39
+      command:
+        - /agnhost
+        - netexec
+        - --http-port
+        - "8080"
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: store-service
+spec:
+  selector:
+    app: store
+  ports:
+    - port: 8080
+      targetPort: 8080
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: webmail-app-pod
+  labels:
+    app: webmail
+spec:
+  containers:
+    - name: webmail-app
+      image: registry.k8s.io/e2e-test-images/agnhost:2.39
+      command:
+        - /agnhost
+        - netexec
+        - --http-port
+        - "8080"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webmail-service
+spec:
+  selector:
+    app: webmail
+  ports:
+    - port: 8080
+      targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: example-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /store(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: store-service
+                port:
+                  number: 8080
+          - path: /webmail(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: webmail-service
+                port:
+                  number: 8080
+
+Apply thew file:
+kubectl apply -f ingress-nginx-example.yaml
+
+We got a warning, to fix it (replace prefix by ImplementationSpecific):
+
+Test the connection:
+
+curl localhost/store/hostname
+curl localhost/webmail/hostname
+
+Delete Ingress:
+***************************************************************************************************************************************
+HandsOn 7: Kubernetes Storage
+
+Kubernetes offers a rich set of storage solutions that cater to various needs, from ephemeral storage to persistent volume claims.
+In this guide, we will explore different types of storage options, such as hostPath and Persistent Volume Claims (PVCs), and how they 
+can be utilized in Kubernetes. We will break the guide into multiple parts for easier understanding and implementation.
+
+Part 1: Host Storage with hostPath
+The hostPath volume mounts a file or directory from the host node’s filesystem into your pod.
+
+Create a Pod with a hostPath Volume
+Create a YAML in a file named hostpath-example.yaml.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: hostpath-example
+spec:
+  containers:
+    - name: test-container
+      image: busybox
+      volumeMounts:
+        - name: test-volume
+          mountPath: /test-volume
+      command: ["sh", "-c", "echo Hello from hostPath > /test-volume/hello.txt && sleep 3600"]
+  volumes:
+    - name: test-volume
+      hostPath:
+        path: /tmp
+
+Verify Storage
+Run these commands (for worker):
+docker ps
+docker exec -it a9fc921288de /bin/bash
+cat /tmp/hello.txt
+
+Part 2: Persistent Storage with PVCs
+Persistent Volume Claims (PVCs) are used to manage durable storage in Kubernetes.
+
+Create a PersistentVolumeClaim
+Save the following YAML in a file named pvc-example.yaml.
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-example
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+Apply:
+kubectl apply -f pvc-example.yaml
+kubectl get pvc
+
+Create a Pod Using PVC
+Save the following YAML in a file named pod-pvc-example.yaml.
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-pvc-example
+spec:
+  containers:
+    - name: test-container
+      image: busybox
+      volumeMounts:
+        - name: test-volume
+          mountPath: /test-volume
+      command: ["sh", "-c", "echo Hello from PVC > /test-volume/hello.txt && sleep 3600"]
+  volumes:
+    - name: test-volume
+      persistentVolumeClaim:
+        claimName: pvc-example
+
+3. Verify storage:
+
+kubectl get pv
+kubectl get pvc pvc-example
+kubectl exec -it pod-pvc-example -- /bin/sh
+# Inside the shell:
+cat /test-volume/hello.txt
+
+4. Delete all resources:
+
+kubectl delete -f hostpath-example.yaml
+kubectl delete -f pod-pvc-example.yaml
+kubectl delete -f pvc-example.yaml
+kubectl delete pod hostpath-example
+*****************************************************************************************************************************************
