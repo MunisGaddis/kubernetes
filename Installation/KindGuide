@@ -107,6 +107,17 @@ kubectl get replicaset
 kubectl get deployments
 kubectl get services
 *********************************************************************************************************************************************
+Install Metrics Server 
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl -n kube-system edit deployment metrics-server
+Add the security bypass to deployment under container.args
+- --kubelet-insecure-tls
+Restart the deployment
+kubectl -n kube-system rollout restart deployment metrics-server
+Verify if the metrics server is running
+kubectl get pods -n kube-system
+kubectl top nodes
+************************************************************************************************************************************************
 Hands-on 2 : Kubernetes Pods
 Introduction to Managing Kubernetes Pods: Imperative vs Declarative
 
