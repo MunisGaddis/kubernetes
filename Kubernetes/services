@@ -83,10 +83,9 @@ spec:
       nodePort: 30082 # Optional: specify NodePort or let Kubernetes assign
   type: NodePort
 ********************************************************************************
-add type in yml 
-type : ClusterIP or External or NodePort
 kubectl apply -f deployment.yml
 kubectl apply -f service.yml
+Access app https:localhost:30082
 kubectl get pods -n nginx-ns -o wide
 kubectl get svc -n nginx-ns
 **********************************************************************************
@@ -95,7 +94,7 @@ if we use ClusterIP We need to foward port in order to run nginx
 kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82
 access nginx : http://localhost:82
 
-if we are using AWS ubuntu VM
+if we are using AWS ubuntu VM then use loadbalancer in service.yml
 kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
 
 if permision denied then give -E environment
