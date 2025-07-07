@@ -120,3 +120,191 @@ docker stop container id
 docker rm container id
 mkdir k8s
 cd k8s
+
+**************************************************************************************************
+kubectl create namespace online-shop
+
+Create deployment for online shop
+
+nano deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: online-shop-deployment
+  namespace: online-shop
+  labels:
+    app: online-shop  # fixed spelling
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: online-shop  # must match pod template labels
+
+  template:
+    metadata:
+      labels:
+        app: online-shop  # must match selector
+    spec:
+      containers:
+        - name: online-shop-container
+          image: monudocker334/online-shop-app-k8s:latest
+          ports:
+            - containerPort: 5173 
+
+kubectl apply -f deployment.yml
+kubectl get pods -n online-shop
+*******************************************************************
+Create service for online shop 
+
+nano service.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-app-svc
+  namespace: online-shop
+spec:
+  type: NodePort   # <-- Only ONE 'type' field here
+  selector:
+    app: online-shop
+  ports:
+    - protocol: TCP
+      port: 5173
+      targetPort: 5173
+      nodePort: 32173  # Optional: You can pick a port in 30000-32767
+
+kubectl apply -f service.yml
+kubectl get all -n online-shop
+
+Port forward
+kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 &
+
+if using AWS ubuntu vm then add --address=0.0.0.0 &
+kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
+****************************************************************************************************
+
+Supose we have two applications and on browser if we need to switch /shop to /apache we need ingress
+
+We need ingress controller to run ingress
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingressdeploy-ingress-nginx.yml
+
+After applying, check that everything is running:
+
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+
+sudo -E kubectl poer-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 &
+
+Explanation:
+sudo -E preserves your environment variables (e.g., KUBECONFIG) if needed.
+The & puts the process in the background.
+
+if using AWS VM
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0 &
+
+Now create ingress.yml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop-ingress
+  namespace: online-shop
+  annotations:
+     nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /shop
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop-svc
+            port:
+              number: 5173
+      
+Now create apache deployment
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: apache-deployment
+  namespace: online-shop
+  labels:
+    app: apache  # fixed spelling
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache  # must match pod template labels
+
+  template:
+    metadata:
+      labels:
+        app: apache  # must match selector
+    spec:
+      containers:
+        - name: online-shop-container
+          image: httpd:latest
+          ports:
+            - containerPort: 80
+
+kubectl apply -f apache.yml
+kubectl get pods -n online-shop
+
+Now create apache-service.yml
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: apache-svc
+  namespace: online-shop
+
+spec:
+  selector:
+    app: apache  # must match pod labels
+
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+     
+kubectl apply -f service.yml
+
+Now we will go to ingress.yml and add new path for apache 
+
+nano ingress.yml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop-ingress
+  namespace: online-shop
+  annotations:
+     nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /shop
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop-svc
+            port:
+              number: 5173
+      - path: /apache
+        pathType: Prefix
+        backend:
+          service:
+            name: apache-service
+            port:
+              number: 80
+
+kubectl apply -f ingress.yml
