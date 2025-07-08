@@ -169,20 +169,21 @@ metadata:
   name: online-app-svc
   namespace: online-shop
 spec:
-  type: NodePort   # <-- Only ONE 'type' field here
   selector:
     app: online-shop
   ports:
     - protocol: TCP
       port: 5173
       targetPort: 5173
-      nodePort: 32173  # Optional: You can pick a port in 30000-32767
+  type: ClusterIP  # <- moved outside the ports block
 
 kubectl apply -f service.yml
 kubectl get all -n online-shop
 
 Port forward
-kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 &
+kubectl port-forward service/notes-app-service -n notes-app 5173:5173
+
+Access notes app in ubuntu VM local : localhost:8000
 
 if using AWS ubuntu vm then add --address=0.0.0.0 &
 kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
