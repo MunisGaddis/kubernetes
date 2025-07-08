@@ -51,7 +51,7 @@ spec:
   type: ClusterIP
     
 kubectl apply -f .
-kubectl port-forward service/notes-app-service -n notes-app 8000:8000
+kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 &
 Access notes app in ubuntu VM local : localhost:8000
 kubectl delete -f .
 *************************************************************************************************************
