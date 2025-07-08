@@ -130,31 +130,24 @@ nano deployment.yml
 
 apiVersion: apps/v1
 kind: Deployment
-
 metadata:
   name: online-shop-deployment
   namespace: online-shop
-  labels:
-    app: online-shop  
-
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: online-shop  
-
+      app: online-shop
   template:
     metadata:
-      name: online-shop-pod
-      namespace: online-shop
       labels:
-        app: online-shop  # must match selector
+        app: online-shop
     spec:
       containers:
-        - name: online-shop-container
-          image: monudocker334/online-shop-app:latest
-          ports:
-            - containerPort: 5173 
+      - name: online-shop-container
+        image: monudocker/online-shop-app:latest
+        ports:
+        - containerPort: 80
 
 kubectl apply -f deployment.yml
 kubectl get pods -n online-shop
@@ -162,28 +155,25 @@ kubectl get pods -n online-shop
 Create service for online shop 
 
 nano service.yml
-
 apiVersion: v1
 kind: Service
 metadata:
   name: online-app-svc
   namespace: online-shop
 spec:
+  type: NodePort
   selector:
     app: online-shop
   ports:
-    - protocol: TCP
-      port: 5173
-      targetPort: 5173
-  type: ClusterIP  # <- moved outside the ports block
-
+    - port: 80           # Service port
+      targetPort: 80     # Container (Nginx) port
+  
 kubectl apply -f service.yml
 kubectl get all -n online-shop
 
 Port forward
-kubectl port-forward service/notes-app-service -n notes-app 5173:5173
-
-Access notes app in ubuntu VM local : localhost:8000
+kubectl port-forward svc/online-app-svc -n online-shop 5173:80 &
+Access notes app in ubuntu VM local : localhost:85173
 
 if using AWS ubuntu vm then add --address=0.0.0.0 &
 kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
