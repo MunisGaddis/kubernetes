@@ -102,7 +102,7 @@ metadata:
   namespace: mysql
 type: Opaque
 data:
-  password: # base64 of 'mysql123'
+  password: # # base64 encoded password
 ---
 apiVersion: v1
 kind: ConfigMap
