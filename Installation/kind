@@ -118,3 +118,16 @@ Verify if the metrics server is running
 kubectl get pods -n kube-system
 kubectl top nodes
 **************************************************************************************************************
+Delete All Kind Clusters
+
+for cluster in $(kind get clusters); do
+  kind delete cluster --name "$cluster"
+done
+
+Remove Dangling Docker Resources (containers, networks, volumes)
+⚠️ Be careful — this removes unused resources globally!
+docker system prune -a --volumes -f
+
+docker network rm kind
+
+
