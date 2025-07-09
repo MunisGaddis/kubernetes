@@ -22,7 +22,7 @@ metadata:
 spec:
   storageClassName: standard
   capacity:
-    storage: 5Gi
+    storage: 2Gi
   accessModes:
     - ReadWriteOnce
   hostPath:
@@ -36,8 +36,9 @@ we can add volume in mnt
    
 kubectl apply -f persistentvolume.yml
 kubectl get pv 
+********************************************************************************
    
-We need one more PVC 
+We need PVC 
 
 nano persistentvolumeclaim.yml
 
@@ -61,6 +62,7 @@ kubectl get pvc -n mysql
 Now we will attach volume with Pod
 
 nano deployment.yml
+
 volumeMounts:
 - name: mysql-volume
   mountPath: /var/lib/mysql
