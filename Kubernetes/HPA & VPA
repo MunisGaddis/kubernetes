@@ -46,6 +46,7 @@ spec:
   type: ClusterIP
 kubectl apply -f apache-deployment.yml
 ******************************************************************************************************************
+We need metrics server for HPA
 Install Metrics Server 
 kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 kubectl -n kube-system edit deployment metrics-server
