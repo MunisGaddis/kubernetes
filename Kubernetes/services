@@ -199,28 +199,7 @@ The & puts the process in the background.
 
 if using AWS VM
 sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0 &
-
-Now create ingress.yml
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: online-shop-ingress
-  namespace: online-shop
-  annotations:
-     nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  rules:
-  - http:
-      paths:
-      - path: /shop
-        pathType: Prefix
-        backend:
-          service:
-            name: online-shop-svc
-            port:
-              number: 5173
-      
+*************************************************************************************************************     
 Now create apache deployment
 
 apiVersion: apps/v1
@@ -279,26 +258,35 @@ nano ingress.yml
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: online-shop-ingress
-  namespace: online-shop
+  name: online-shop
+  namespace: online-shop-prod
   annotations:
-     nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
 spec:
+  ingressClassName: nginx
   rules:
+  - host: online-shop.iemafzalhassan.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
   - http:
       paths:
-      - path: /shop
+      - path: /
         pathType: Prefix
         backend:
           service:
-            name: online-shop-svc
-            port:
-              number: 5173
-      - path: /apache
-        pathType: Prefix
-        backend:
-          service:
-            name: apache-service
+            name: online-shop
             port:
               number: 80
 
