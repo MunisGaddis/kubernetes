@@ -103,29 +103,16 @@ Here’s how to do it step by step:
 🟢 Step 1: Start Your Minikube Cluster (if not already running)
 If you haven’t started Minikube yet:
 
-bash
-Copy
-Edit
 minikube start --driver=docker --vm=true
+
 🟢 Step 2: Enable the Dashboard
 Minikube comes with the dashboard addon. You can enable it with:
-
-bash
-Copy
-Edit
 minikube addons enable dashboard
-✅ You should see:
 
-csharp
-Copy
-Edit
+✅ You should see:
 🌟  The 'dashboard' addon is enabled
 🟢 Step 3: Launch the Dashboard
 Run:
-
-bash
-Copy
-Edit
 minikube dashboard
 This command does two things:
 
@@ -135,9 +122,6 @@ Opens the dashboard in your default web browser automatically.
 
 ✅ Example output:
 
-bash
-Copy
-Edit
 🔌  Enabling dashboard ...
 🤔  Verifying dashboard health ...
 🚀  Launching proxy ...
@@ -148,8 +132,5 @@ Edit
 🟢 Step 4: Accessing the Dashboard Again Later
 If you close the dashboard or the terminal session, simply run:
 
-bash
-Copy
-Edit
 minikube dashboard
 again to re-launch it.
