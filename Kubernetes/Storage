@@ -178,4 +178,58 @@ spec:
         - name: mysql-data
           persistentVolumeClaim:
             claimName: mysql-pvc
-*************************************************************************************************************************
+************************************************************************************************************************************
+check claim
+kubectl get pv
+kubectl get pods -n mysql
+kubectl describe pod pod name -n mysql
+see worker node
+docker ps
+docker exec -it container ID bash
+cd mnt
+cd data
+ls
+*****************************************************************************************************************************************
+✅ Option 1: Single Combined YAML File
+If you saved all configurations (Namespace, Secret, ConfigMap, PV, PVC, Deployment) into one file, e.g., mysql-deployment.yaml, use:
+
+# Apply all at once
+kubectl apply -f mysql-deployment.yaml
+
+# Get status of all resources in 'mysql' namespace
+kubectl get all -n mysql
+kubectl get pvc -n mysql
+kubectl get pv
+kubectl get secret -n mysql
+kubectl get configmap -n mysql
+
+✅ Option 2: Multiple YAML Files
+If you saved each resource in separate files, e.g.:
+namespace.yaml
+secret.yaml
+configmap.yaml
+pv.yaml
+pvc.yaml
+deployment.yaml
+
+Apply all using:
+# Apply all files in the current folder
+kubectl apply -f .
+
+# Or apply them one by one
+kubectl apply -f namespace.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f pv.yaml
+kubectl apply -f pvc.yaml
+kubectl apply -f deployment.yaml
+
+Then get their status:
+kubectl get all -n mysql
+kubectl get pvc -n mysql
+kubectl get pv
+kubectl get configmap -n mysql
+kubectl get secret -n mysql
+
+🔁 Bonus: Watch status updates in real time
+kubectl get pods -n mysql -w
