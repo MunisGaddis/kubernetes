@@ -172,8 +172,8 @@ kubectl apply -f service.yml
 kubectl get all -n online-shop
 
 Port forward
-kubectl port-forward svc/online-app-svc -n online-shop 5173:80 &
-Access notes app in ubuntu VM local : localhost:85173
+kubectl port-forward svc/online-shop-svc -n online-shop 5173:80 &
+Access notes app in ubuntu VM local : localhost:5173
 
 if using AWS ubuntu vm then add --address=0.0.0.0 &
 kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
