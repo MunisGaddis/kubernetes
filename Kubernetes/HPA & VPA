@@ -1,3 +1,25 @@
+In Kubernetes, HPA (Horizontal Pod Autoscaler) and VPA (Vertical Pod Autoscaler) are mechanisms for 
+automatically adjusting the resource usage of your workloads based on usage metrics.
+
+🌀 Horizontal Pod Autoscaler (HPA)
+Purpose: Automatically scales the number of pod replicas up or down based on observed CPU/memory utilization or custom metrics.
+
+✅ Key Features:
+Works by adding/removing pods.
+Best for stateless applications.
+Supports metrics from CPU, memory, and custom metrics (via Prometheus or other adapters)
+*****************************************************************************************************************
+We need metrics server for HPA
+Install Metrics Server 
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+kubectl -n kube-system edit deployment metrics-server
+Add the security bypass to deployment under container.args
+- --kubelet-insecure-tls
+Restart the deployment
+kubectl -n kube-system rollout restart deployment metrics-server
+Verify if the metrics server is running
+kubectl get pods -n kube-system
+kubectl top nodes
 ****************************************************************************************************
 nano apache-deployment.yml
 
@@ -46,18 +68,7 @@ spec:
   type: ClusterIP
 kubectl apply -f apache-deployment.yml
 ******************************************************************************************************************
-We need metrics server for HPA
-Install Metrics Server 
-kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
-kubectl -n kube-system edit deployment metrics-server
-Add the security bypass to deployment under container.args
-- --kubelet-insecure-tls
-Restart the deployment
-kubectl -n kube-system rollout restart deployment metrics-server
-Verify if the metrics server is running
-kubectl get pods -n kube-system
-kubectl top nodes
-*****************************************************************************************************************
+
 We can implement HPA in online-shop app
 nano hpa.yml
 
@@ -83,7 +94,19 @@ spec:
 
 kubectl apply -f hpa.yml
 *********************************************************************************************************************
-Vertical Horizontal Scaling
+🧠 Vertical Pod Autoscaler (VPA)
+Purpose: Automatically adjusts CPU and memory requests/limits for your pods based on usage.
+
+✅ Key Features:
+Helps optimize resource requests to prevent over/under-provisioning.
+Useful for stateful or long-running jobs.
+Requires pod restart to apply new recommendations (may cause downtime).
+
+🛠 VPA Modes:
+Off: Only records recommendations.
+Initial: Applies recommendations when pod is first created.
+Auto: Automatically updates pods (kills and restarts them with new values).
+**********************************************************************************************************************
 git clone https://github.com/kubernetes/autoscaler.git
 cd autoscaler/vertical-pod-autoscaler
 cd hack
