@@ -1,0 +1,212 @@
+
+🟢 1. namespace.yml
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: online-shop-prod
+  labels:
+    environment: production
+
+Explanation:
+Namespace: Logical partition in the cluster. This keeps resources isolated in the online-shop-prod environment.
+Useful for resource quotas, RBAC, and separating dev/staging/prod environments.
+
+🟢 2. configmap.yml
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: online-shop-config
+  namespace: online-shop-prod
+data:
+  NODE_ENV: "production"
+  HOST: "0.0.0.0"
+  PORT: "5173"
+  VITE_HOST: "0.0.0.0"
+
+Explanation:
+ConfigMap: Injects environment variables into the app.
+Keeps app configuration separate from image/container code.
+Values are accessed inside the container as environment variables.
+
+🟢 3. deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: online-shop
+  template:
+    metadata:
+      labels:
+        app: online-shop
+    spec:
+      containers:
+      - name: online-shop
+        image: online_shop:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 80
+        envFrom:
+        - configMapRef:
+            name: online-shop-config
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "300m"
+            memory: "256Mi"
+Explanation:
+
+Deployment: Manages a set of Pods with replica count = 3.
+
+imagePullPolicy: Never is used for local testing (make sure image is loaded in cluster).
+
+Resources: Request ensures minimum availability, limits protect from overuse.
+
+envFrom: Loads all variables from ConfigMap.
+
+🟢 4. service.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+spec:
+  selector:
+    app: online-shop
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+Explanation:
+Service: Exposes Deployment inside the cluster.
+ClusterIP: Internal service (used by Ingress or other pods).
+Matches pods with app: online-shop label.
+
+🟢 5. hpa.yml (Horizontal Pod Autoscaler)
+
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: online-shop
+  minReplicas: 2
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+
+Explanation:
+HPA: Scales pods dynamically based on CPU & Memory usage.
+Starts with 2 pods, can grow to 5 when thresholds are crossed.
+Needs metrics-server running in the cluster.
+
+🟢 6. ingress.yml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: online-shop.iemafzalhassan.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
+
+Explanation:
+Ingress: Exposes the service outside the cluster using HTTP(S).
+host: Routes requests from online-shop.iemafzalhassan.tech to your service.
+Annotations: Custom timeouts and no HTTPS redirect (useful for dev/test).
+Requires an Ingress controller like NGINX to be installed and configured.
+
+✅ Tips
+Component	Key Requirement
+Ingress	Needs ingress-nginx controller installed
+HPA	Needs metrics-server running
+Deployment	Ensure online_shop:latest image exists locally if Never
+Namespace	Create first before applying other resources
+
+
+To apply these Kubernetes manifests in the correct order, you should follow the logical dependencies between the resources. Here's the correct order and the explanation:
+
+✅ Apply Order
+Step	File Name	Resource Type	Reason
+1️⃣	namespace.yml	Namespace	Required for all other namespaced resources.
+2️⃣	configmap.yml	ConfigMap	Required before Deployment (used for env vars).
+3️⃣	deployment.yml	Deployment	Creates the pods using the config.
+4️⃣	service.yml	Service	Required for Ingress and internal routing.
+5️⃣	hpa.yml	HorizontalPodAutoscaler	Depends on the Deployment.
+6️⃣	ingress.yml	Ingress	Routes external traffic to the Service.
+
+🧪 How to Apply
+You can apply each file individually in this order:
+
+kubectl apply -f namespace.yml
+kubectl apply -f configmap.yml
+kubectl apply -f deployment.yml
+kubectl apply -f service.yml
+kubectl apply -f hpa.yml
+kubectl apply -f ingress.yml
+Or, if all YAML files are in the same folder and you want to apply them all at once:
+
+kubectl apply -f . --prune -l app=online-shop
+But this works best if each file includes consistent labels (app: online-shop) for pruning to work safely.
+
+🚀 Extra Tips
+To check if everything is working:
+kubectl get all -n online-shop-prod
+To verify Ingress:
+kubectl describe ingress online-shop -n online-shop-prod
+To check autoscaler:
+kubectl get hpa -n online-shop-prod
