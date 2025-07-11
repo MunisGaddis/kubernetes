@@ -182,9 +182,14 @@ kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0
 Supose we have two applications and on browser if we need to switch /shop to /apache we need ingress
 
 We need ingress controller to run ingress
-kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/kind/deploy.yaml
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
 
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.10.1/deploy/static/provider/kind/deploy.yaml
+Wait until is ready to process requests running:
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
 
 After applying, check that everything is running:
 
