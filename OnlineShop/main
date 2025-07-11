@@ -1,0 +1,82 @@
+Complete production-ready setup for your Online Shop application in Kubernetes, including:
+
+✅ Deployment
+✅ Service
+✅ Ingress
+✅ HPA (Horizontal Pod Autoscaler)
+✅ ConfigMap
+✅ Secret
+
+Kubernetes pull images from dockerHub. Make sure image is pushed to DockerHub
+
+✅ Step-by-step Guide
+1. Clone the Repository
+git clone https://github.com/LondheShubham153/online_shopping_app.git
+cd online_shopping_app
+
+2. Build Docker Image
+docker build -t monudocker334/online-shop-app:latest .
+✅ Make sure your Dockerfile is in the root of the cloned repo and correctly builds the frontend using Vite (usually it's built into /dist and served via nginx).
+
+3. Run Locally to Test
+docker run -d -p 5173:80 monudocker334/online-shop-app:latest
+Open browser: http://localhost:5173
+If it loads correctly, you’re good to go.
+
+To stop and clean up:
+docker ps    # Note the container ID
+docker stop <container-id>
+docker rm <container-id>
+
+4. Push Image to Docker Hub
+docker login
+docker push monudocker334/online-shop-app:latest
+
+5. Prepare for Kubernetes
+mkdir k8s
+cd k8s
+
+Create the namespace:
+kubectl create namespace online-shop
+
+kubectl apply -f deployment.yml
+kubectl get pods -n online-shop
+*******************************************************************
+Create service for online shop 
+kubectl apply -f service.yml
+kubectl get all -n online-shop
+
+Port forward
+kubectl port-forward svc/online-shop-svc -n online-shop 5173:80 &
+Access notes app in ubuntu VM local : localhost:5173
+
+if using AWS ubuntu vm then add --address=0.0.0.0 &
+kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
+****************************************************************************************************
+Supose we have two applications and on browser if we need to switch /shop to /apache we need ingress
+
+We need ingress controller to run ingress
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+
+Wait until is ready to process requests running:
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+After applying, check that everything is running:
+
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 &
+
+Explanation:
+sudo -E preserves your environment variables (e.g., KUBECONFIG) if needed.
+The & puts the process in the background.
+
+if using AWS VM
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0 &
+*************************************************************************************************************     
+
