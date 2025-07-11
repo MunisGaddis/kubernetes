@@ -11,11 +11,13 @@ Kubernetes pull images from dockerHub. Make sure image is pushed to DockerHub
 
 ✅ Step-by-step Guide
 1. Clone the Repository
+
 git clone https://github.com/LondheShubham153/online_shopping_app.git
 cd online_shopping_app
 
 2. Build Docker Image
 docker build -t monudocker334/online-shop-app:latest .
+
 ✅ Make sure your Dockerfile is in the root of the cloned repo and correctly builds the frontend using Vite (usually it's built into /dist and served via nginx).
 
 3. Run Locally to Test
@@ -24,6 +26,7 @@ Open browser: http://localhost:5173
 If it loads correctly, you’re good to go.
 
 To stop and clean up:
+
 docker ps    # Note the container ID
 docker stop <container-id>
 docker rm <container-id>
