@@ -13,8 +13,43 @@ kubectl wait --namespace ingress-nginx \
 
 After applying, check that everything is running:
 
+Create ingress.yml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop-ingress
+  namespace: online-shop
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: online-shop.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: online-app-svc
+                port:
+                  number: 80
+
 kubectl get pods -n ingress-nginx
 kubectl get svc -n ingress-nginx
+
+If you're on a local cluster (e.g., Minikube, Kind, etc.), point the hostname to your ingress controller's IP:
+
+# Get ingress controller IP
+kubectl get svc -n ingress-nginx
+# NAME            TYPE           CLUSTER-IP       EXTERNAL-IP     PORT(S)
+# ingress-nginx   LoadBalancer   10.0.0.50        192.168.49.2     80:...
+
+# Add to /etc/hosts (use sudo)
+192.168.49.2 online-shop.local
+
+✅ Step 4: Test in Browser
+
+📍 http://online-shop.local — you should see your app.
 
 sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 &
 
