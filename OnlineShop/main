@@ -42,20 +42,93 @@ cd k8s
 Create the namespace:
 kubectl create namespace online-shop
 
+Create deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-shop-deployment
+  namespace: online-shop
+  labels:
+    app: online-shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: online-shop
+
+  template:
+    metadata:
+      name: online-shop-pod
+      namespace: online-shop
+      labels:
+       app: online-shop
+
+    spec:
+      containers:
+        - name: online-shop-container
+          image: monudocker334/online-shop-app:latest
+          ports:
+            - containerPort: 80
+
 kubectl apply -f deployment.yml
 kubectl get pods -n online-shop
-*******************************************************************
+*********************************************************************************************************
+✅ ClusterIP Version of the Service
+
 Create service for online shop 
+
+nano service.yml
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-app-svc
+  namespace: online-shop
+spec:
+  selector:
+    app: online-shop
+  ports:
+    - protocol: TCP
+      port: 80        # Exposes service on port 80
+      targetPort: 80  # Forwards traffic to container port 80
+  type: ClusterIP  
+
 kubectl apply -f service.yml
 kubectl get all -n online-shop
 
 Port forward
-kubectl port-forward svc/online-shop-svc -n online-shop 5173:80 &
-Access notes app in ubuntu VM local : localhost:5173
+kubectl port-forward svc/online-app-svc -n online-shop 5173:80 &
+Access online-app in local VM : http://localhost:5173
 
 if using AWS ubuntu vm then add --address=0.0.0.0 &
-kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
-****************************************************************************************************
+kubectl port-forward svc/online-app-svc -n online-shop 5173:80 --address=0.0.0.0 &
+
+If we want to access app in worker node
+change ClusterIP to NodePort
+
+✅ NodePort Version of the Service
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-app-svc
+  namespace: online-shop
+spec:
+  selector:
+    app: online-shop
+  type: NodePort
+  ports:
+    - protocol: TCP
+      port: 80           # Service port (inside the cluster)
+      targetPort: 80     # Container port
+      nodePort: 30080    # Exposed port on the node (external access)
+
+kubectl apply -f service.yml
+kubectl get all -n online-shop
+Access app http://workerIP:NodePort
+*******************************************************************************************************************
+
 Supose we have two applications and on browser if we need to switch /shop to /apache we need ingress
 
 We need ingress controller to run ingress
