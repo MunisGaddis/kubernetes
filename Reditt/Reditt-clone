@@ -144,6 +144,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: ingress-reddit-app
+  namespace: reditt
 spec:
   rules:
   - host: "domain.com"
@@ -180,7 +181,7 @@ minikube ip
 192.168.49.2
 
 Edit your sudo nano /etc/hosts 
-192.168.49.2 domain.com
+Add 192.168.49.2 domain.com
 curl -L domain.com/test
 *************************************************************************************************************************************************
 Step 1: Delete the Ingress Controller
