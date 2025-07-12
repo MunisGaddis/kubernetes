@@ -31,6 +31,12 @@ docker push <DockerHub_Username>/<Imagename>
 **********************************************************************************************
 Write a Kubernetes Manifest File
 
+Create namespace reditt : kubectl create namespace reditt
+
+Create reditt deployment.yml
+
+nano reditt-deployment.yml
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -49,10 +55,21 @@ spec:
     spec:
       containers:
       - name: reddit-clone
-        image: monudocker334/reddit-app:latest
+        image: monudocker334/reddit-clone:latest
         ports:
         - containerPort: 3000
-******************************************************************************************************
+
+kubectl apply -f deployment.yml
+kubectl get deployment -n reditt
+kubectl get pods -n reditt
+***********************************************************************************************************************************
+Service is essential for making your application discoverable and accessible, either within the cluster or from the outside world.
+
+🚀 Why do we need a Service in Kubernetes?
+A Deployment creates and manages Pods, but:
+Pods have dynamic IPs (they can change if a pod dies and restarts).
+You can’t rely on pod IPs to communicate between services or with the outside.
+
 Write service.yml file
 
 apiVersion: v1
@@ -69,11 +86,10 @@ spec:
     nodePort: 31000
   selector:
     app: reddit-clone
-*************************************************************************************************************************************
-kubectl apply -f deployment.yml
+***********************************************************************************************************
 kubectl apply -f service.yml
 
-minikube service reddit-clone-service --url
+minikube service reddit-clone-service -n reditt --url
 You can test your deployment using curl -L http://192.168.49.2:31000. 
 
 If You want to check your deployment & Service use the command 
@@ -81,16 +97,34 @@ kubectl get deployment
 kubectl get services
 
 if we want to run app on browser we need to expose port
-kubectl expose deployment reddit-clone-deployment --type=NodePort
-
-Then We have to expose our app service if using AWS Instance
-kubectl port-forward svc/reddit-clone-service 3000:3000 --address 0.0.0.0 &
+kubectl expose deployment reddit-clone-deployment -n reditt --type=NodePort
 
 If using local VM
-kubectl port-forward svc/reddit-clone-service 3000:3000 &
+kubectl port-forward -n reditt svc/reddit-clone-service 3000:3000 &
+(& runs app in the background)
+
+Access app localhost:3000
+
+if trafic increase scale the deployment 
+
+📈 1. Scale using kubectl:
+kubectl scale deployment -n reditt reddit-clone-deployment --replicas=5
+This command scales your deployment to 5 replicas.
+kubectl apply -f deployment.yaml
+
+📈 3. Auto-scaling with HPA (Horizontal Pod Autoscaler):
+kubectl autoscale deployment -n reditt reddit-clone-deployment --cpu-percent=50 --min=2 --max=10
+
+Then We have to expose our app service if using AWS Instance
+kubectl port-forward -n reditt svc/reddit-clone-service 3000:3000 --address 0.0.0.0 &
+
 *************************************************************************************************************************************
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.9.6/deploy/static/provider/kind/deploy.yaml
- or 
+🚪 Why Do We Need Ingress in Kubernetes?
+Ingress is used to expose services to the outside world over HTTP/HTTPS — in a smarter and more flexible way 
+than just using NodePorts or LoadBalancers.
+
+For example :
+
 minikube addons enable ingress
 
 Wait for ingress controller to be ready
@@ -135,8 +169,6 @@ spec:
 
 *****************************************************************************************************************************************
 kubectl apply -f ingress.yml
-
-curl -L domain.com/test
 
 Access the Ingress via curl
 curl -L domain.com/test
