@@ -14,6 +14,7 @@ kubectl wait --namespace ingress-nginx \
 After applying, check that everything is running:
 
 Create ingress.yml
+
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
