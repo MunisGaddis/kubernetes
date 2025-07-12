@@ -133,6 +133,7 @@ Supose we have two applications and on browser if we need to switch /shop to /ap
 
 We need ingress controller to run ingress
 kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+kubectl delete -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
 
 Wait until is ready to process requests running:
 
