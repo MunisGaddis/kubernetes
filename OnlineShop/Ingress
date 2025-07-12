@@ -35,7 +35,6 @@ spec:
                   number: 80
 
 kubectl get pods -n ingress-nginx
-kubectl get svc -n ingress-nginx
 
 If you're on a local cluster (e.g., Minikube, Kind, etc.), point the hostname to your ingress controller's IP:
 
