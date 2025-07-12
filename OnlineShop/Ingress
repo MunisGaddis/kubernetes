@@ -1,1 +1,75 @@
+We need ingress controller to run ingress
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+kubectl delete -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+
+Wait until is ready to process requests running:
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+After applying, check that everything is running:
+
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 &
+
+Explanation:
+sudo -E preserves your environment variables (e.g., KUBECONFIG) if needed.
+The & puts the process in the background.
+
+if using AWS VM
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0 &
+*************************************************************************************************************     
+Now create apache deployment
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: apache-deployment
+  namespace: online-shop
+  labels:
+    app: apache 
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache 
+
+  template:
+    metadata:
+      labels:
+        app: apache  # must match selector
+    spec:
+      containers:
+        - name: online-shop-container
+          image: httpd:latest
+          ports:
+            - containerPort: 80
+
+kubectl apply -f apache.yml
+kubectl get pods -n online-shop
+
+Now create apache-service.yml
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: apache-svc
+  namespace: online-shop
+spec:
+  selector:
+    app: apache  # must match pod labels
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP
+
+kubectl apply -f service.yml
 
