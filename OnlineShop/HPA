@@ -1,1 +1,41 @@
 
+To set up Horizontal Pod Autoscaler (HPA) for your online-shop-deployment, follow these steps.
+
+✅ Step 1: Ensure Metrics Server is Installed
+HPA needs resource usage data (CPU, memory), which comes from the Metrics Server.
+Install it (if not already):
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+Check it's working:
+kubectl get --raw "/apis/metrics.k8s.io/v1beta1/nodes"
+
+✅ Step 2: Update Deployment to Include Resource Requests
+HPA only works if your containers specify resources.requests (and optionally resources.limits):
+Update your deployment YAML like this:
+
+containers:
+  - name: online-shop-container
+    image: monudocker334/online-shop-app:latest
+    ports:
+      - containerPort: 80
+    resources:
+      requests:
+        cpu: "100m"
+        memory: "128Mi"
+      limits:
+        cpu: "500m"
+        memory: "256Mi"
+
+Apply the updated deployment:
+kubectl apply -f deployment.yaml
+
+✅ Step 3: Create the HPA
+Run this command:
+kubectl autoscale deployment online-shop-deployment \
+  --cpu-percent=50 \
+  --min=2 \
+  --max=10 \
+  -n online-shop
+Scales between 2 and 10 replicas based on 50% CPU usage.
+
+✅ Step 4: View HPA Status
+kubectl get hpa -n online-shop
