@@ -13,12 +13,12 @@ rm -rf *
 docker system prune -a
 *********************************************************************************
 cd k8s
-kubectl apply -f namespace.yaml
-kubectl apply -f mongo-pvc.yaml -n chat-app
-kubectl apply -f backend-secrets.yaml -n chat-app
-kubectl apply -f frontend-configmap.yaml -n chat-app
-kubectl apply -f mongodb-deployment.yaml -n chat-app
-kubectl apply -f mongodb-service.yaml -n chat-app
+kubectl apply -f namespace.yml
+kubectl apply -f mongo-pvc.yml -n chat-app
+kubectl apply -f backend-secrets.yml -n chat-app
+kubectl apply -f frontend-configmap.yml -n chat-app
+kubectl apply -f mongodb-deployment.yml -n chat-app
+kubectl apply -f mongodb-service.yml -n chat-app
 
 # Wait for MongoDB pod to be ready
 kubectl wait --for=condition=Ready pods -l app=mongodb -n chat-app --timeout=120s
