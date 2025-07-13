@@ -13,12 +13,44 @@ rm -rf *
 docker system prune -a
 *********************************************************************************
 cd k8s
+
+🧩 Typical Order of Deployment
+
+# 1. Create Namespace
 kubectl apply -f namespace.yml
-kubectl apply -f mongo-pvc.yml -n chat-app
-kubectl apply -f backend-secrets.yml -n chat-app
-kubectl apply -f frontend-configmap.yml -n chat-app
-kubectl apply -f mongodb-deployment.yml -n chat-app
-kubectl apply -f mongodb-service.yml -n chat-app
+
+# 2. Apply Secrets
+kubectl apply -f secrets.yml
+
+# 3. Create MongoDB Storage
+kubectl apply -f mongodb-pv.yml
+kubectl apply -f mongodb-pvc.yml
+
+# 4. Deploy MongoDB
+kubectl apply -f mongodb-deployment.yml
+kubectl apply -f mongodb-service.yml
+
+# 5. Deploy Backend
+kubectl apply -f backend-deployment.yml
+kubectl apply -f backend-service.yml
+
+# 6. Deploy Frontend
+kubectl apply -f frontend-deployment.yml
+kubectl apply -f frontend-service.yml
+
+Ingress NGINX
+🛑 Make sure you’ve installed an Ingress Controller (like ingress-nginx) before applying ingress.yml.
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+
+Now the Ingress is all setup. Wait until is ready to process requests running:
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+# 7. Set up Ingress (after controller is installed)
+kubectl apply -f ingress.yml
 
 # Wait for MongoDB pod to be ready
 kubectl wait --for=condition=Ready pods -l app=mongodb -n chat-app --timeout=120s
