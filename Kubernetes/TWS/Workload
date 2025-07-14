@@ -1,0 +1,279 @@
+***********************************************************************************************************************************************
+A Kubernetes Namespace is a way to divide cluster resources between multiple users or teams. It provides a virtual cluster 
+inside the Kubernetes cluster.
+
+Create Namespace
+
+nano namespace.yml
+
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: nginx-ns
+  
+kubectl apply -f namespace.yml
+kubectl get ns
+kubectl delete namespace nginx-ns
+
+***********************************************************************************************************************************************
+A Pod is the smallest and simplest unit in Kubernetes — it represents one or more containers that are deployed together on the same host.
+
+What is a Pod?
+A Pod wraps one or more containers (usually one) that share:
+Networking: same IP address, port space.
+Storage: can share volumes.
+Containers in a Pod always run on the same node and can communicate easily.
+
+Create Pod in Nginx-ns Namespace
+
+nano pod.yml
+
+apiVersion: v1
+kind: Pod
+
+metadata:
+  name: nginx-pod
+  namespace: nginx-ns
+
+spec:
+  containers:
+    - name: nginx
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+   
+kubectl apply -f pod.yml
+kubectl get pods -n nginx-ns
+kubectl delete pod nginx-pod -n nginx-ns   
+
+**********************************************************************************************************************************************
+In order to have desired state we need deployment
+
+A Kubernetes Deployment is a resource object in Kubernetes used to manage and automate the creation, update, and scaling of application Pods.
+
+🔹 What Does a Deployment Do?
+
+Ensures the desired number of Pods are running and available.
+Supports rolling updates to update the application with zero downtime.
+Allows rollback to previous versions if something goes wrong.
+Monitors the health of Pods and replaces them if they crash or become unresponsive.
+We need to create deployment in order to scale pod. 
+
+Now Lets create deployment 
+
+apiVersion: Defines the API version to use for this object. In this case, apps/v1 is commonly used for Deployments, StatefulSets, 
+DaemonSets, and other controllers under the apps group.
+
+One Line command : kubectl create deployment nginx-deployment --image=nginx:latest -n nginx-ns --replicas=2
+
+nano deployment.yml 
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+****************************************************************************************************************
+Creates a ReplicaSet internally.
+Supports rolling updates (e.g., upgrading image version).
+Supports rollback if needed.
+************************************************************************************************************************************
+This checks for syntax or validation issues without actually creating the deployment.
+kubectl apply -f deployment.yml --dry-run=client 
+kubectl apply -f deployment.yml 
+kubectl get deployment -n nginx-ns
+kubectl get pods -n nginx-ns
+To continuously watch the status of pods in the nginx-ns namespace, use:
+To refresh every 1 second:
+
+watch -n 1 kubectl get pods -n nginx-ns
+or
+kubectl get pods -n nginx-ns -w
+
+This command scales a Kubernetes deployment to a desired number of replicas (pods).
+kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=10
+kubectl scale deployment/nginx-deployment -n nginx-ns --replicas=0
+kubectl get pods -n nginx-ns
+kubectl delete -f deployment.yaml
+
+Deployment do rolling updates but replica dosen't 
+kubectl get pods -n nginx-ns -o wide (to get more information about pod) 
+Currently all pods are running on latest nginx
+Go to deployment.yml and change nginx version : 1.27.5
+Roll out Command :- 
+kubectl set image deployment/nginx-deployment nginx=nginx:1.14.2 -n nginx-ns 
+check pods 
+kubectl get pods -n nginx-ns 
+kubectl delete deployment nginx-deployment -n nginx-ns
+****************************************************************************************************************************************
+A ReplicaSet in Kubernetes is a controller that ensures a specified number of identical pod replicas are running at any given time.
+
+What it does
+Ensures that the desired number of pods are always up and running.
+If a pod crashes or is deleted, the ReplicaSet automatically creates a new one to maintain the count.
+If there are too many pods (e.g., you scaled down), it will terminate the extra pods.
+
+nano replicaset.yml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+  namespace: nginx-ns
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+
+Creates 3 Pods running nginx.
+If a Pod fails, it gets replaced.
+No update strategy—just ensures the count.
+
+kubectl apply -f replicaset.yml
+kubectl get pods -n nginx-ns
+kubectl delete pod nginx-replicaset-8l2kn -n nginx-ns
+
+Get Pods and see if new pod created automatically
+kubectl get pods -n nginx-ns
+Replica will run 2 Pods now delete 1 pod and watch if replicaset create new pod automatically
+
+Add Resource Requests/Limits:
+
+resources:
+  limits:
+    memory: "128Mi"
+    cpu: "500m"
+  requests:
+    memory: "64Mi"
+    cpu: "250m"
+
+kubectl top pod -n nginx-ns
+
+Add Health Probes:
+Liveness Probe checks whether the container is still alive.
+If it fails repeatedly, Kubernetes restarts the container.
+
+Readiness Probe checks whether the container is ready to serve traffic.
+If it fails, Kubernetes removes the pod from the Service endpoints (stops sending traffic), but does not restart the container.
+
+livenessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 15
+  periodSeconds: 20
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 80
+  initialDelaySeconds: 5
+  periodSeconds: 10
+
+To check metrics :- 
+kubectl top pod <pod-name> -n nginx-ns
+
+kubectl scale replicaset nginx-replicaset --replicas=5 -n nginx-ns
+
+kubectl get replicaset -n nginx-ns
+
+Get detailed info about a specific ReplicaSet:
+kubectl describe replicaset nginx-replicaset -n nginx-ns
+
+Delete a specific ReplicaSet in the current namespace:
+kubectl delete replicaset nginx-replicaset -n nginx-ns
+
+Delete all ReplicaSets in a namespace (be careful!):
+kubectl delete replicaset --all -n nginx-ns
+
+✅ Notes:
+This ReplicaSet does not include rolling updates or deployment strategies, which are handled by a Deployment.
+Make sure the namespace nginx-ns exists, or include a namespace manifest as mentioned earlier.
+****************************************************************************************************************************************
+A StatefulSet is a Kubernetes controller used to manage stateful applications — apps that require persistent storage, 
+stable network identities, and ordered deployment or scaling.
+
+📦 What a StatefulSet Does:
+Maintains a unique identity for each pod (like pod-0, pod-1, etc.).
+Keeps data persistent using PersistentVolumeClaims (PVCs), even if a pod is deleted or rescheduled.
+Ensures ordered creation, deletion, and scaling of pods.
+
+🧠 When to Use StatefulSet:
+Use it when your app:
+Needs stable storage (e.g., databases like MySQL, PostgreSQL).
+Requires sticky network identities (e.g., redis-0.nginx.default.svc.cluster.local).
+Needs pods to be created in a specific sequence.
+
+StatefulSet YAML for running two replicas of NGINX:
+
+nano statefulset.yml
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: nginx-statefulset
+  namespace: nginx-ns
+spec:
+  serviceName: "nginx"
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+  volumeClaimTemplates:
+  - metadata:
+      name: nginx-storage
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 1Gi
+      storageClassName: "standard"  # Replace with your storage class
+****************************************************************************************************************
+Creates Pods with predictable names:
+nginx-0
+nginx-1
+nginx-2
+
+Each Pod gets its own persistent volume claim, e.g.,
+www-nginx-0
+www-nginx-1
+www-nginx-2
+
+Pods start and terminate in order.
+********************************************************************************************************************************************
