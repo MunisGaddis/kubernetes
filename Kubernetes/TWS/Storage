@@ -1,0 +1,235 @@
+In Kubernetes, PV (PersistentVolume) and PVC (PersistentVolumeClaim) are key components of the storage architecture that abstract the 
+way storage is provisioned and used by pods.
+
+📦 What is a PersistentVolume (PV)?
+A PV is a piece of storage in the cluster that has been provisioned by an administrator or dynamically provisioned using StorageClasses.
+It's a resource in the cluster, similar to a node.
+It represents a real storage device like a GCE disk, EBS volume, NFS share, or local disk.
+
+📝 What is a PersistentVolumeClaim (PVC)?
+A PVC is a request for storage by a user.
+It specifies size, access modes, and optionally a specific StorageClass.
+Kubernetes matches PVCs to PVs that satisfy the claim.
+
+*************************************************************************************************************************************************
+
+nano persistent volume
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data
+
+save file
+docker ps 
+docker exec -it container ID bash
+type ls
+we can add volume in mnt
+   
+kubectl apply -f persistentvolume.yml
+kubectl get pv 
+********************************************************************************
+   
+We need PVC 
+
+nano persistentvolumeclaim.yml
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: mysql
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+save file 
+kubectl apply -f persistentVolumeClaim.yml
+kubectl get pvc -n mysql
+
+Now we will attach volume with Pod
+
+nano deployment.yml
+
+volumeMounts:
+- name: mysql-volume
+  mountPath: /var/lib/mysql
+  
+volumes:
+- name: mysql-data
+  persistentVolumeClaim:
+     claimName: mysql-pvc
+  
+kubectl get pvc -n mysql
+kubectl get pv 
+To check where data is getting stored
+kubectl describe pod pod name -n mysql
+check in which node data is getting saved
+docker exec -it node ID bash
+ls
+cd mnt
+ls
+cd data
+ls
+Check data
+
+Delete namespace 
+kubectl delete -f namespace.yml
+*******************************************************************************************************************
+Final Deployment with Namespace, Deployment, Secret, ConfigMap, PV and PVC
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: mysql
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: mysql
+type: Opaque
+data:
+  password: # # base64 encoded password
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mysql-config-map
+  namespace: mysql
+data:
+  database: myDB
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  storageClassName: standard
+  capacity:
+    storage: 2Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: /mnt/data
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-pvc
+  namespace: mysql
+spec:
+  storageClassName: standard
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-dep
+  namespace: mysql
+  labels:
+    app: mysql
+spec:
+  replicas: 1    # Recommended: use 1 replica for stateful services like MySQL
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8
+          ports:
+            - containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
+            - name: MYSQL_DATABASE
+              valueFrom:
+                configMapKeyRef:
+                  name: mysql-config-map
+                  key: database
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-pvc
+************************************************************************************************************************************
+check claim
+kubectl get pv
+kubectl get pods -n mysql
+kubectl describe pod pod name -n mysql
+see worker node
+docker ps
+docker exec -it container ID bash
+cd mnt
+cd data
+ls
+*****************************************************************************************************************************************
+✅ Option 1: Single Combined YAML File
+If you saved all configurations (Namespace, Secret, ConfigMap, PV, PVC, Deployment) into one file, e.g., mysql-deployment.yaml, use:
+
+# Apply all at once
+kubectl apply -f mysql-deployment.yaml
+
+# Get status of all resources in 'mysql' namespace
+kubectl get all -n mysql
+kubectl get pvc -n mysql
+kubectl get pv
+kubectl get secret -n mysql
+kubectl get configmap -n mysql
+
+✅ Option 2: Multiple YAML Files
+If you saved each resource in separate files, e.g.:
+namespace.yaml
+secret.yaml
+configmap.yaml
+pv.yaml
+pvc.yaml
+deployment.yaml
+
+Apply all using:
+# Apply all files in the current folder
+kubectl apply -f .
+
+# Or apply them one by one
+kubectl apply -f namespace.yaml
+kubectl apply -f secret.yaml
+kubectl apply -f configmap.yaml
+kubectl apply -f pv.yaml
+kubectl apply -f pvc.yaml
+kubectl apply -f deployment.yaml
+
+Then get their status:
+kubectl get all -n mysql
+kubectl get pvc -n mysql
+kubectl get pv
+kubectl get configmap -n mysql
+kubectl get secret -n mysql
+
+🔁 Bonus: Watch status updates in real time
+kubectl get pods -n mysql -w
