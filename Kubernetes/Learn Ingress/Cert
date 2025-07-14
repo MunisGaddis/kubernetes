@@ -77,25 +77,26 @@ Apply it:
 
 kubectl apply -f clusterissuer-prod.yaml
 kubectl describe clusterissuer letsencrypt-prod
+
 6. Switch to Production
 Update ingress-resource.yaml:
 
 annotations:
   cert-manager.io/cluster-issuer: "letsencrypt-prod"
+
 Then re-apply:
 
 kubectl apply -f ingress-resource.yaml
-
 kubectl get certificate
 kubectl describe certificate <certificate-name>
 
 🔍 If HTTPS Still Shows "Not Secure", Check the Following:
 ✅ Checkpoint	Command or Fix
-NGINX ingress controller is running	kubectl get pods -n ingress-nginx
-DNS resolves to the correct external IP	dig example.devopspro.in or check with browser
-Ingress resource is created correctly	kubectl describe ingress <name>
-Certificate is issued successfully	kubectl describe certificate <cert-name>
-Secret (e.g. tls-secret) is created	kubectl get secret tls-secret
-No firewall blocking port 80/443	Check cloud provider or VM security groups
-NGINX ingress config includes TLS	kubectl describe ingress should list TLS block
+NGINX ingress controller is running-------------kubectl get pods -n ingress-nginx
+DNS resolves to the correct external IP	dig ----example.devopspro.in or check with browser
+Ingress resource is created correctly-----------kubectl describe ingress <name>
+Certificate is issued successfully--------------kubectl describe certificate <cert-name>
+Secret (e.g. tls-secret) is created	------------kubectl get secret tls-secret
+No firewall blocking port 80/443----------------Check cloud provider or VM security groups
+NGINX ingress config includes TLS---------------kubectl describe ingress should list TLS block
 cert-manager logs	kubectl logs -l app.kubernetes.io/name=cert-manager -n cert-manager
