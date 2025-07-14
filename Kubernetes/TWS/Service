@@ -1,1 +1,298 @@
+What is a Kubernetes Service?
+In Kubernetes, a Service is an abstraction which defines a logical set of Pods and a policy by which to access them. 
+Because Pods are ephemeral (they can be created and destroyed dynamically), Services provide a stable endpoint (IP address and DNS name) 
+to allow communication between different parts of your application or from outside the cluster.
 
+Services enable:
+Load balancing across multiple Pods
+Service discovery inside the cluster
+Stable networking endpoint even if Pods change
+
+Types of Kubernetes Services
+There are four main types of Services in Kubernetes:
+1. ClusterIP (default)
+Exposes the service on a cluster-internal IP.
+Accessible only inside the Kubernetes cluster.
+Used for internal communication between Pods.
+Example use case: Backend services that only other Pods should access.
+
+2. NodePort
+Exposes the service on each Node’s IP at a static port (the NodePort).
+Makes the service accessible from outside the cluster using <NodeIP>:<NodePort>.
+NodePort is built on top of ClusterIP (service is still accessible inside the cluster).
+Example use case: Simple external access without a load balancer.
+
+3. LoadBalancer
+Exposes the service externally using a cloud provider’s load balancer (e.g., AWS ELB, GCP LB).
+The cloud provider provisions a load balancer and routes traffic to the NodePort.
+Requires Kubernetes running in a supported cloud environment.
+Example use case: Production services needing a stable external endpoint with cloud LB.
+
+4. ExternalName
+Maps the service to a DNS name (external to the cluster).
+Does not create a typical proxy or IP; instead, it returns a CNAME record to clients.
+Useful for accessing external resources as if they were a service inside the cluster.
+Example use case: Connecting to an external database or API endpoint.
+********************************************************************************************************************
+
+Kubernetes Service
+
+Full YAML: Namespace, Deployment, and Service
+*********************************************************
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: nginx-ns
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: nginx-ns
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+
+  template:
+    metadata:
+      labels:
+        app: nginx
+
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:latest
+        ports:
+        - containerPort: 80
+***************************************************************************************************
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-svc
+  namespace: nginx-ns
+spec:
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 82        # Port exposed by the service inside the cluster
+      targetPort: 80  # Port on the pod
+      nodePort: 30082 # Optional: specify NodePort or let Kubernetes assign
+  type: NodePort
+********************************************************************************
+kubectl apply -f deployment.yml
+kubectl apply -f service.yml
+Access app https:localhost:30082
+kubectl get pods -n nginx-ns -o wide
+kubectl get svc -n nginx-ns
+**********************************************************************************
+nginx is running on port 82
+if we use ClusterIP We need to foward port in order to run nginx
+kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82
+access nginx : http://localhost:82
+
+if we are using AWS ubuntu VM then use loadbalancer in service.yml
+kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
+
+if permision denied then give -E environment
+sudo -E kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82 --address=0.0.0.0
+
+Now access IP:Port on browser
+kubectl scale deployment nginx-deployment -n nginx-ns --replicas=10
+kubectl get pods -n nginx-ns
+
+Now all pods will handle traffic
+kubectl scale deployment nginx-deployment -n nginx-ns --replicas=0
+Now no one will be able to access nginx application
+********************************************************************************************************************
+Online Shopping App Project
+
+git clone https://github.com/LondheShubham153/online_shopping_app.git
+docker build -t online_shop_app-k8s:latest .
+we will check if application is running or not
+docker run -d -p 5173:80 online_shop_app-k8s:latest
+docker push monudocker334/online-shop-app-k8s:latest
+check app in browser localhost:5173
+docker stop container id
+docker rm container id
+mkdir k8s
+cd k8s
+
+**************************************************************************************************
+kubectl create namespace online-shop
+
+Create deployment for online shop
+
+nano deployment.yml
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: online-shop-deployment
+  namespace: online-shop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: online-shop
+  template:
+    metadata:
+      labels:
+        app: online-shop
+    spec:
+      containers:
+      - name: online-shop-container
+        image: monudocker/online-shop-app:latest
+        ports:
+        - containerPort: 80
+
+kubectl apply -f deployment.yml
+kubectl get pods -n online-shop
+*******************************************************************
+Create service for online shop 
+
+nano service.yml
+apiVersion: v1
+kind: Service
+metadata:
+  name: online-app-svc
+  namespace: online-shop
+spec:
+  type: NodePort
+  selector:
+    app: online-shop
+  ports:
+    - port: 80           # Service port
+      targetPort: 80     # Container (Nginx) port
+  
+kubectl apply -f service.yml
+kubectl get all -n online-shop
+
+Port forward
+kubectl port-forward svc/online-shop-svc -n online-shop 5173:80 &
+Access notes app in ubuntu VM local : localhost:5173
+
+if using AWS ubuntu vm then add --address=0.0.0.0 &
+kubectl port-forward svc/online-app-svc -n online-shop 5173:5173 --address=0.0.0.0 &
+****************************************************************************************************
+
+Supose we have two applications and on browser if we need to switch /shop to /apache we need ingress
+
+We need ingress controller to run ingress
+kubectl apply -f https://kind.sigs.k8s.io/examples/ingress/deploy-ingress-nginx.yaml
+
+Wait until is ready to process requests running:
+
+kubectl wait --namespace ingress-nginx \
+  --for=condition=ready pod \
+  --selector=app.kubernetes.io/component=controller \
+  --timeout=90s
+
+After applying, check that everything is running:
+
+kubectl get pods -n ingress-nginx
+kubectl get svc -n ingress-nginx
+
+sudo -E kubectl poer-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 &
+
+Explanation:
+sudo -E preserves your environment variables (e.g., KUBECONFIG) if needed.
+The & puts the process in the background.
+
+if using AWS VM
+sudo -E kubectl port-forward svc/ingress-nginx-controller -n ingress-nginx 80:80 --address=0.0.0.0 &
+*************************************************************************************************************     
+Now create apache deployment
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: apache-deployment
+  namespace: online-shop
+  labels:
+    app: apache 
+
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: apache 
+
+  template:
+    metadata:
+      labels:
+        app: apache  # must match selector
+    spec:
+      containers:
+        - name: online-shop-container
+          image: httpd:latest
+          ports:
+            - containerPort: 80
+
+kubectl apply -f apache.yml
+kubectl get pods -n online-shop
+
+Now create apache-service.yml
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: apache-svc
+  namespace: online-shop
+
+spec:
+  selector:
+    app: apache  # must match pod labels
+
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+     
+kubectl apply -f service.yml
+
+Now we will go to ingress.yml and add new path for apache 
+
+nano ingress.yml
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: online-shop
+  namespace: online-shop-prod
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "1800"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "1800"
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: online-shop.iemafzalhassan.tech
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
+  - http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: online-shop
+            port:
+              number: 80
+
+kubectl apply -f ingress.yml
