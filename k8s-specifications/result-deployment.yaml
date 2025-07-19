@@ -15,7 +15,7 @@ spec:
         app: result
     spec:
       containers:
-      - image: monudocker334/result:v1
+      - image: monudocker334/result:latest
         name: result
         ports:
         - containerPort: 80
