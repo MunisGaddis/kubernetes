@@ -1,0 +1,51 @@
+✅ Install Argo CD on Kubernetes
+1. Create Namespace for Argo CD
+kubectl create namespace argocd
+
+2. Install Argo CD
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+3. Check Argo CD Services
+kubectl get svc -n argocd
+
+4. Expose Argo CD UI via NodePort (Optional if not using port-forward)
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+
+5. Access Argo CD via Port Forwarding (Optional)
+kubectl port-forward -n argocd service/argocd-server 8443:443 &
+Access UI: https://localhost:8443
+Accept the browser security warning
+
+🔐 Argo CD Admin Login
+6. Get Initial Admin Password
+kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+Username: admin
+Password: (value from above command)
+
+🚀 Create New App in Argo CD UI
+Open Argo CD UI (https://localhost:8443)
+Login with admin and the password from the above command
+Click "New App"
+Application Name	---voting-app
+Project---default
+Sync Policy	-----Automatic
+Repository URL	----https://github.com/your-username/your-repo.git
+Revision	-------main
+Path	-----path/to/kubernetes/ymls
+Cluster URL	---(https://kubernetes.default.svc) (default)
+Namespace	-------default
+Then click Create.
+
+🔁 Update App (Scale Replicas)
+Go to your GitHub repo
+Edit the Deployment YAML (e.g., deploy.yaml) and change:
+replicas: 1
+to
+replicas: 3
+Commit the changes to the main branch
+
+⏱ Argo CD Syncs Automatically
+If sync policy is Automatic, the changes will reflect in a few seconds.
+If you set it to manual:
+Go to the app in Argo CD UI
+Click Refresh or Sync manually
