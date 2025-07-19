@@ -1,3 +1,55 @@
+✅ Clone and Navigate to the Voting App
+git clone https://github.com/dockersamples/example-voting-app.git
+cd example-voting-app
+🛠️ Build Docker Images
+cd vote
+docker build -t monudocker334/vote:latest .
+cd ../result
+docker build -t monudocker334/result:latest .
+cd ../worker
+docker build -t monudocker334/worker:latest .
+🚀 Push Docker Images to Docker Hub
+Make sure you're logged in:
+docker login
+Then push the images:
+docker push monudocker334/vote:latest
+docker push monudocker334/result:latest
+docker push monudocker334/worker:latest
+
+🧱 (Optional) Fix Buildx Errors (Linux/Manual Users)
+Remove Existing Buildx Binaries
+
+sudo rm -f /usr/local/lib/docker/cli-plugins/docker-buildx
+sudo rm -f /usr/local/bin/docker-buildx
+rm -f ~/.docker/cli-plugins/docker-buildx
+Detect Architecture
+uname -m
+Output should be something like x86_64 or aarch64
+
+Download Correct Buildx Binary
+
+BUILDX_VERSION="v0.13.0"  # or the latest from GitHub
+TARGET_ARCH=$(uname -m)
+
+if [ "$TARGET_ARCH" = "x86_64" ]; then
+  ARCH="amd64"
+elif [ "$TARGET_ARCH" = "aarch64" ]; then
+  ARCH="arm64"
+else
+  echo "Unsupported architecture: $TARGET_ARCH"
+  exit 1
+fi
+
+mkdir -p ~/.docker/cli-plugins
+wget "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-${ARCH}" -O ~/.docker/cli-plugins/docker-buildx
+Make It Executable
+
+chmod +x ~/.docker/cli-plugins/docker-buildx
+Verify Buildx
+docker buildx version
+Enable BuildKit
+export DOCKER_BUILDKIT=1
+*************************************************************************************************************
 ✅ Install Argo CD on Kubernetes
 1. Create Namespace for Argo CD
 kubectl create namespace argocd
