@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+34apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
@@ -15,5 +15,5 @@ spec:
         app: worker
     spec:
       containers:
-      - image: dockersamples/examplevotingapp_worker
+      - image: monudocker334/worker:v1
         name: worker
