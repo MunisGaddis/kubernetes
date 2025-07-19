@@ -148,3 +148,29 @@ Choose "Token"
 Paste the token you copied earlier
 Click Sign In
 ********************************************************************************************************************************
+✅ Corrected and Annotated Steps:
+# Step 1: Go to your Kubernetes YAML directory
+cd k8specifications
+
+# Step 2: Apply all the YAML manifests
+kubectl apply -f .
+
+# Step 3: Check if pods are running
+kubectl get pods -n default
+
+# Step 4: Port-forward the vote service (assuming it's exposed on port 5000 in the cluster)
+kubectl port-forward svc/vote 5000:5000 &
+If you really need to forward to a different local port, do:
+
+kubectl port-forward svc/vote 5001:5000 &
+This will map local port 5001 to cluster port 5000.
+
+🌐 Access in Browser:
+Open your browser and go to:
+
+http://localhost:5000
+http://localhost:5001 (only if forwarded like above)
+
+✅ Bonus: Check service ports
+You can verify which ports your service exposes:
+kubectl get svc vote -o yaml
