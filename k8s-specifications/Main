@@ -19,9 +19,9 @@ cd example-voting-app
 🛠️ Build Docker Images
 cd vote
 docker build -t monudocker334/vote:latest .
-cd ../result
+cd result
 docker build -t monudocker334/result:latest .
-cd ../worker
+cd worker
 docker build -t monudocker334/worker:latest .
 🚀 Push Docker Images to Docker Hub
 Make sure you're logged in:
