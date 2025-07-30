@@ -58,3 +58,34 @@ All Services
 All Deployments
 All ReplicaSets
 Everything managed by kubectl get all
+*******************************************************************************************************
+Deploying a Three-tier Application LIVE on AWS EKS
+Create AWS Instance
+Install docker : sudo apt install docker.io -y
+type whoami
+echo $USER
+sudo chown $USER /var/run/docker.sock
+
+git clone https://github.com/LondheShubham153/TWSThreeTierAppChallenge
+
+cd TWSThreeTierAppChallenge
+cd Application-code
+
+cd frontend
+docker build -t monudocker334/3tier-frontend:latest
+docker run -d -p 3000:3000 monudocker334/3tier-frontend:latest
+Add 3000 port in Security Groups - Inbound Rules
+Access App : PublicIP:3000
+docker push monudocker334/3tier-frontend:latest
+Push Image to Amazon ECR
+Create IAM user 
+Access Administrator
+aws configure
+enter access key 
+
+
+cd backend 
+docker build -t monudocker334/3tier-backend:latest
+docker push monudocker334/3tier-backend:latest
+
+
