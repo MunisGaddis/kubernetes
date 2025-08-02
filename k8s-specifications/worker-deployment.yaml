@@ -15,5 +15,5 @@ spec:
         app: worker
     spec:
       containers:
-      - image: monudocker334/worker:latest
+      - image: dockersamples/examplevotingapp_worker
         name: worker
