@@ -152,7 +152,7 @@ kubectl -n kubernetes-dashboard create token admin-user
 This will output a long token string. Copy it — you’ll use it to log into the dashboard.
 
 ✅ 5. Port Forward the Dashboard to Your Localhost
-kubectl port-forward svc/kubernetes-dashboard -n kubernetes-dashboard 8080:443 &
+kubectl port-forward svc/kubernetes-dashboard -n kubernetes-dashboard 8080:443 --address=0.0.0.0 &
 ✅ 6. Access the Dashboard
 Open your browser and go to:
 https://localhost:8080
@@ -220,8 +220,8 @@ helm install kind-prometheus prometheus-community/kube-prometheus-stack \
   --set prometheus-node-exporter.service.nodePort=32001 \
   --set prometheus-node-exporter.service.type=NodePort
   
-kubectl port-forward svc/kind-prometheus-kube-prome-prometheus -n monitoring 9090:9090 &
-kubectl port-forward svc/kind-prometheus-grafana -n monitoring 31000:80 &
+kubectl port-forward svc/kind-prometheus-kube-prome-prometheus -n monitoring 9090:9090 --address=0.0.0.0 &
+kubectl port-forward svc/kind-prometheus-grafana -n monitoring 31000:80 --address=0.0.0.0 &
   
 📊 Grafana Setup & Admin Login
 🔐 Get Grafana Admin Password
