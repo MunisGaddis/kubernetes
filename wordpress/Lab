@@ -1,6 +1,87 @@
 Create AWS t3.medium Instance
-Setup ArgoCD
-Install docker
-Install Kind
 
+Install Docker
+sudo apt update && sudo apt upgrade
+sudo apt install docker.io -y 
+
+Install Kind
+🌱 KIND Cluster Setup Guide
+
+What is KinD?
+KinD (Kubernetes in Docker) is an open-source tool designed to enable running Kubernetes clusters locally using 
+Docker container “nodes.” KinD is especially useful for testing, CI/CD workflows, and temporary clusters where 
+you need an environment similar to a full-fledged Kubernetes cluster but don’t need all the bells and whistles 
+that come with it. KinD is quick to set up and tear down, making it ideal for various development and testing scenarios.
+
+Create and run this install script:
+
+#!/bin/bash
+# Install KIND
+if [ "$(uname -m)" = "x86_64" ]; then
+  curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.27.0/kind-linux-amd64
+  chmod +x ./kind
+  sudo mv ./kind /usr/local/bin/kind
+fi
+
+# Install kubectl
+VERSION="v1.33.1"
+URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
+INSTALL_DIR="/usr/local/bin"
+
+curl -LO "$URL"
+chmod +x kubectl
+sudo mv kubectl $INSTALL_DIR/
+
+# Verify kubectl installation
+kubectl version --client
+
+# Cleanup
+rm -f kubectl
+rm -rf kind
+
+echo "✅ KIND & kubectl installation complete."
+***********************************************************************************************
+2️⃣ Set up KIND Cluster
+📄 Create nano kind-cluster-config.yaml
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.33.1
+  - role: worker
+    image: kindest/node:v1.33.1
+  - role: worker
+    image: kindest/node:v1.33.1
+**************************************************************************************************************
+▶ Create the cluster
+kind create cluster --config kind-cluster-config.yaml --name tws
+kubectl get no
+*************************************************************************************************************
+✅ Install Argo CD on Kubernetes
+1. Create Namespace for Argo CD
+kubectl create namespace argocd
+
+2. Install Argo CD
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+3. Check Argo CD Services
+kubectl get svc -n argocd
+
+4. Expose Argo CD UI via NodePort (Optional if not using port-forward)
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+
+5. Access Argo CD via Port Forwarding (Optional)
+kubectl port-forward -n argocd service/argocd-server 8443:443 --address=0.0.0.0 &
+Access UI: https://localhost:8443
+Accept the browser security warning
+
+🔐 Argo CD Admin Login
+6. Get Initial Admin Password
+kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+
+Allow Ports in Inbound Rules under Security :- 8443
+
+Access ArgoCD :- PublicIP:Port
+*******************************************************************************************************************
 
