@@ -115,3 +115,44 @@ Verify if the metrics server is running
 kubectl get pods -n kube-system
 kubectl top nodes
 **********************************************************************************************************************
+✅ 1. Create the Namespace for the Dashboard
+kubectl create namespace kubernetes-dashboard
+
+✅ 2. Deploy the Kubernetes Dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+✅ 3. Create an Admin User (YAML)
+Save the following as admin-user.yaml:
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+Apply it:
+kubectl apply -f admin-user.yaml
+✅ 4. Generate the Login Token
+kubectl -n kubernetes-dashboard create token admin-user
+This will output a long token string. Copy it — you’ll use it to log into the dashboard.
+
+✅ 5. Port Forward the Dashboard to Your Localhost
+kubectl port-forward svc/kubernetes-dashboard -n kubernetes-dashboard 8080:443 --address=0.0.0.0 &
+✅ 6. Access the Dashboard
+Open your browser and go to:
+https://PublicIP:8080
+⚠️ Note: The browser might warn you about an insecure connection (self-signed cert). You can safely proceed.
+**************************************************************************************************************************
