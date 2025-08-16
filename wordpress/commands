@@ -34,6 +34,11 @@ kubectl get pv
 Run the following command to deploy the NetworkPolicy.
 kubectl apply -f networkpolicy.yaml
 
+kubectl port-forward svc/wordpress-service 8080:80 --address=0.0.0.0 &
+
+Allow 8080 port in Aws Inbound Rules under Security
+Access Application :- Public IP:Port
+
 To check if the NetworkPolicies are created, run the following command
 kubectl get netpol
 
