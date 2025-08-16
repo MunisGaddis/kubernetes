@@ -1,0 +1,41 @@
+kubectl create ns wordpress
+
+Run the following command to set the WordPress namespace as the default namespace.
+kubectl config set-context --current --namespace=wordpress
+
+kubectl apply -f secret.yaml
+kubectl get secret
+
+Run the following command to create configmap for Nginx
+kubectl apply -f nginx-cm.yaml
+
+Run the following command to create configmap for MySQL
+kubectl apply -f mysql-cm.yaml
+kubectl get cm
+
+Run the following command to deploy MySQL and its service
+kubectl apply -f mysql.yaml
+
+Run the following commands to check if the MySQL StatefulSet and its service is deployed
+kubectl get sts
+kubectl get svc
+
+Run the following command to deploy the WordPress.
+kubectl apply -f wordpress.yaml
+  
+Run the following commands to check if the WordPress deployment and its service is deployed.
+kubectl get deploy
+kubectl get svc
+
+WordPress and MySQL have been created, check the status of PVC and PV using the following commands
+kubectl get pvc
+kubectl get pv
+
+Run the following command to deploy the NetworkPolicy.
+kubectl apply -f networkpolicy.yaml
+
+To check if the NetworkPolicies are created, run the following command
+kubectl get netpol
+
+Delete All resources
+kubectl delete -f .
