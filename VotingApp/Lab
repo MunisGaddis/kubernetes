@@ -292,11 +292,8 @@ Username: admin
 Password: (output from above)
 
 🌐 Access Grafana
-If using NodePort:
-URL: http://<NodeIP>:31000
-
 If using port-forward:
-URL: http://localhost:31000
+URL: http://PublicIP:31000
 
 Verify Services
 kubectl get svc -n monitoring
