@@ -125,6 +125,7 @@ nodes:
 **************************************************************************************************************
 ▶ Create the cluster
 kind create cluster --config kind-cluster-config.yaml --name tws
+kubectl get no
 *************************************************************************************************************
 ✅ Install Argo CD on Kubernetes
 1. Create Namespace for Argo CD
