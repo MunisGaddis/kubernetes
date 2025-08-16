@@ -141,7 +141,7 @@ kubectl get svc -n argocd
 kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
 
 5. Access Argo CD via Port Forwarding (Optional)
-kubectl port-forward -n argocd service/argocd-server 8443:443 &
+kubectl port-forward -n argocd service/argocd-server 8443:443 --address=0.0.0.0 &
 Access UI: https://localhost:8443
 Accept the browser security warning
 
