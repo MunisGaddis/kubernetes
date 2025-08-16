@@ -1,0 +1,295 @@
+Description:
+Led the deployment of scalable applications on AWS EC2 using Kubernetes and Argo CD for streamlined management and continuous integration. 
+Orchestrated deployments via Kubernetes dashboard, ensuring efficient resource utilisation and seamless scaling.
+
+Key Technologies:
+AWS EC2: Infrastructure hosting for Kubernetes clusters.
+Kubernetes Dashboard: User-friendly interface for managing containerised applications.
+Argo CD: Continuous Delivery tool for automated application deployments.
+
+Achievements:
+Implemented Kubernetes dashboard for visual management of containerised applications on AWS EC2 instances. Utilised Argo CD for 
+automated deployment pipelines, enhancing deployment efficiency by 60%. Achieved seamless scaling and high availability, 
+supporting 99.9% uptime for critical applications. This project description emphasises your role in leveraging AWS EC2, 
+Kubernetes, and Argo CD to optimise application deployment and management processes effectively.
+**********************************************************************************************************************************************
+✅ Clone and Navigate to the Voting App
+git clone https://github.com/dockersamples/example-voting-app.git
+cd example-voting-app
+🛠️ Build Docker Images
+cd vote
+docker build -t monudocker334/vote:latest .
+cd result
+docker build -t monudocker334/result:latest .
+cd worker
+docker build -t monudocker334/worker:latest .
+🚀 Push Docker Images to Docker Hub
+Make sure you're logged in:
+docker login
+Then push the images:
+docker push monudocker334/vote:latest
+docker push monudocker334/result:latest
+docker push monudocker334/worker:latest
+
+🧱 (Optional) Fix Buildx Errors (Linux/Manual Users)
+Remove Existing Buildx Binaries
+
+sudo rm -f /usr/local/lib/docker/cli-plugins/docker-buildx
+sudo rm -f /usr/local/bin/docker-buildx
+rm -f ~/.docker/cli-plugins/docker-buildx
+Detect Architecture
+uname -m
+Output should be something like x86_64 or aarch64
+
+Download Correct Buildx Binary
+
+BUILDX_VERSION="v0.13.0"  # or the latest from GitHub
+TARGET_ARCH=$(uname -m)
+
+if [ "$TARGET_ARCH" = "x86_64" ]; then
+  ARCH="amd64"
+elif [ "$TARGET_ARCH" = "aarch64" ]; then
+  ARCH="arm64"
+else
+  echo "Unsupported architecture: $TARGET_ARCH"
+  exit 1
+fi
+
+mkdir -p ~/.docker/cli-plugins
+wget "https://github.com/docker/buildx/releases/download/${BUILDX_VERSION}/buildx-${BUILDX_VERSION}.linux-${ARCH}" -O ~/.docker/cli-plugins/docker-buildx
+Make It Executable
+
+chmod +x ~/.docker/cli-plugins/docker-buildx
+Verify Buildx
+docker buildx version
+Enable BuildKit
+export DOCKER_BUILDKIT=1
+*************************************************************************************************************
+Install Kind
+🌱 KIND Cluster Setup Guide
+
+What is KinD?
+KinD (Kubernetes in Docker) is an open-source tool designed to enable running Kubernetes clusters locally using 
+Docker container “nodes.” KinD is especially useful for testing, CI/CD workflows, and temporary clusters where 
+you need an environment similar to a full-fledged Kubernetes cluster but don’t need all the bells and whistles 
+that come with it. KinD is quick to set up and tear down, making it ideal for various development and testing scenarios.
+
+Create and run this install script:
+
+#!/bin/bash
+# Install KIND
+if [ "$(uname -m)" = "x86_64" ]; then
+  curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.27.0/kind-linux-amd64
+  chmod +x ./kind
+  sudo mv ./kind /usr/local/bin/kind
+fi
+
+# Install kubectl
+VERSION="v1.33.1"
+URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
+INSTALL_DIR="/usr/local/bin"
+
+curl -LO "$URL"
+chmod +x kubectl
+sudo mv kubectl $INSTALL_DIR/
+
+# Verify kubectl installation
+kubectl version --client
+
+# Cleanup
+rm -f kubectl
+rm -rf kind
+
+echo "✅ KIND & kubectl installation complete."
+***********************************************************************************************
+2️⃣ Set up KIND Cluster
+📄 Create kind-cluster-config.yaml
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.33.1
+  - role: worker
+    image: kindest/node:v1.33.1
+  - role: worker
+    image: kindest/node:v1.33.1
+**************************************************************************************************************
+▶ Create the cluster
+kind create cluster --config kind-cluster-config.yaml --name tws
+*************************************************************************************************************
+✅ Install Argo CD on Kubernetes
+1. Create Namespace for Argo CD
+kubectl create namespace argocd
+
+2. Install Argo CD
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+3. Check Argo CD Services
+kubectl get svc -n argocd
+
+4. Expose Argo CD UI via NodePort (Optional if not using port-forward)
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "NodePort"}}'
+
+5. Access Argo CD via Port Forwarding (Optional)
+kubectl port-forward -n argocd service/argocd-server 8443:443 &
+Access UI: https://localhost:8443
+Accept the browser security warning
+
+🔐 Argo CD Admin Login
+6. Get Initial Admin Password
+kubectl get secret -n argocd argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d && echo
+Username: admin
+Password: (value from above command)
+
+🚀 Create New App in Argo CD UI
+Open Argo CD UI (https://localhost:8443)
+Login with admin and the password from the above command
+Click "New App"
+Application Name	---voting-app
+Project---default
+Sync Policy	-----Automatic
+Repository URL	----https://github.com/your-username/your-repo.git
+Revision	-------main
+Path	-----path/to/kubernetes/ymls
+Cluster URL	---(https://kubernetes.default.svc) (default)
+Namespace	-------default
+Then click Create.
+
+🔁 Update App (Scale Replicas)
+Go to your GitHub repo
+Edit the Deployment YAML (e.g., deploy.yaml) and change:
+replicas: 1
+to
+replicas: 3
+Commit the changes to the main branch
+
+⏱ Argo CD Syncs Automatically
+If sync policy is Automatic, the changes will reflect in a few seconds.
+If you set it to manual:
+Go to the app in Argo CD UI
+Click Refresh or Sync manually
+********************************************************************************************************************************
+✅ 1. Create the Namespace for the Dashboard
+kubectl create namespace kubernetes-dashboard
+
+✅ 2. Deploy the Kubernetes Dashboard
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+✅ 3. Create an Admin User (YAML)
+Save the following as admin-user.yaml:
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+Apply it:
+kubectl apply -f admin-user.yaml
+✅ 4. Generate the Login Token
+kubectl -n kubernetes-dashboard create token admin-user
+This will output a long token string. Copy it — you’ll use it to log into the dashboard.
+
+✅ 5. Port Forward the Dashboard to Your Localhost
+kubectl port-forward svc/kubernetes-dashboard -n kubernetes-dashboard 8080:443 --address=0.0.0.0 &
+✅ 6. Access the Dashboard
+Open your browser and go to:
+https://localhost:8080
+⚠️ Note: The browser might warn you about an insecure connection (self-signed cert). You can safely proceed.
+
+✅ 7. Login to the Dashboard
+Choose "Token"
+Paste the token you copied earlier
+Click Sign In
+********************************************************************************************************************************
+✅ Corrected and Annotated Steps:
+# Step 1: Go to your Kubernetes YAML directory
+cd k8specifications
+
+# Step 2: Apply all the YAML manifests
+kubectl apply -f .
+
+# Step 3: Check if pods are running
+kubectl get pods -n default
+
+# Step 4: Port-forward the vote service (assuming it's exposed on port 5000 in the cluster)
+kubectl port-forward svc/vote 5000:5000 &
+If you really need to forward to a different local port, do:
+
+kubectl port-forward svc/vote 5001:5000 &
+This will map local port 5001 to cluster port 5000.
+
+🌐 Access in Browser:
+Open your browser and go to:
+
+http://localhost:5000
+http://localhost:5001 (only if forwarded like above)
+
+✅ Bonus: Check service ports
+You can verify which ports your service exposes:
+kubectl get svc vote -o yaml
+**********************************************************************************************************************************
+Prometheus & Grafana Tutorial For DevOps on Kubernetes | Observability
+clone voting app
+change vote service port to 31002
+
+Install helm
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
+Install Kube Prometheus Stack
+# Add Helm repos
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo add stable https://charts.helm.sh/stable
+helm repo update
+
+# Create namespace
+kubectl create namespace monitoring
+
+# Install Prometheus stack with NodePort services
+helm install kind-prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set prometheus.service.nodePort=30000 \
+  --set prometheus.service.type=NodePort \
+  --set grafana.service.nodePort=31000 \
+  --set grafana.service.type=NodePort \
+  --set alertmanager.service.nodePort=32000 \
+  --set alertmanager.service.type=NodePort \
+  --set prometheus-node-exporter.service.nodePort=32001 \
+  --set prometheus-node-exporter.service.type=NodePort
+  
+kubectl port-forward svc/kind-prometheus-kube-prome-prometheus -n monitoring 9090:9090 --address=0.0.0.0 &
+kubectl port-forward svc/kind-prometheus-grafana -n monitoring 31000:80 --address=0.0.0.0 &
+  
+📊 Grafana Setup & Admin Login
+🔐 Get Grafana Admin Password
+kubectl get secret --namespace monitoring kind-prometheus-grafana -o jsonpath="{.data.admin-password}" | base64 --decode ; echo
+Username: admin
+Password: (output from above)
+
+🌐 Access Grafana
+If using NodePort:
+URL: http://<NodeIP>:31000
+
+If using port-forward:
+URL: http://localhost:31000
+
+Verify Services
+kubectl get svc -n monitoring
+
+kubectl get namespace
