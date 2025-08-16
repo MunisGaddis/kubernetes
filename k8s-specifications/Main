@@ -65,6 +65,59 @@ docker buildx version
 Enable BuildKit
 export DOCKER_BUILDKIT=1
 *************************************************************************************************************
+Install Kind
+🌱 KIND Cluster Setup Guide
+
+What is KinD?
+KinD (Kubernetes in Docker) is an open-source tool designed to enable running Kubernetes clusters locally using 
+Docker container “nodes.” KinD is especially useful for testing, CI/CD workflows, and temporary clusters where 
+you need an environment similar to a full-fledged Kubernetes cluster but don’t need all the bells and whistles 
+that come with it. KinD is quick to set up and tear down, making it ideal for various development and testing scenarios.
+
+Create and run this install script:
+
+#!/bin/bash
+# Install KIND
+if [ "$(uname -m)" = "x86_64" ]; then
+  curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.27.0/kind-linux-amd64
+  chmod +x ./kind
+  sudo mv ./kind /usr/local/bin/kind
+fi
+
+# Install kubectl
+VERSION="v1.33.1"
+URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
+INSTALL_DIR="/usr/local/bin"
+
+curl -LO "$URL"
+chmod +x kubectl
+sudo mv kubectl $INSTALL_DIR/
+
+# Verify kubectl installation
+kubectl version --client
+
+# Cleanup
+rm -f kubectl
+rm -rf kind
+
+echo "✅ KIND & kubectl installation complete."
+***********************************************************************************************
+2️⃣ Set up KIND Cluster
+📄 Create kind-cluster-config.yaml
+
+kind: Cluster
+apiVersion: kind.x-k8s.io/v1alpha4
+nodes:
+  - role: control-plane
+    image: kindest/node:v1.33.1
+  - role: worker
+    image: kindest/node:v1.33.1
+  - role: worker
+    image: kindest/node:v1.33.1
+**************************************************************************************************************
+▶ Create the cluster
+kind create cluster --config kind-cluster-config.yaml --name tws
+*************************************************************************************************************
 ✅ Install Argo CD on Kubernetes
 1. Create Namespace for Argo CD
 kubectl create namespace argocd
