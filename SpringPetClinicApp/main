@@ -6,7 +6,6 @@ push to dockerhub :- docker push monudocker334/petclinic-app-k8s:latest
 kubectl create namespace dev
 Set as dev namespace as default namespace:
 kubectl config set-context --current --namespace=dev
-
 **********************************************************************
 kubectl apply -f mysql-deployment.yml
 kubectl get all -n dev
