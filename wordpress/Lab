@@ -84,4 +84,34 @@ Allow Ports in Inbound Rules under Security :- 8443
 
 Access ArgoCD :- PublicIP:Port
 *******************************************************************************************************************
+Install Metrics Server 
+Apply the customized Metrics Server deployment:
 
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+🧹 Delete the entire manifest:
+kubectl delete -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+🔧 Patch the deployment to allow insecure TLS (required for Kind):
+
+kubectl patch deployment metrics-server -n kube-system \
+  --type='json' \
+  -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+
+🧪 Step 3: Test Metrics Server
+Wait for the metrics-server pod to be ready:
+kubectl get pods -n kube-system
+After a few seconds/minutes, test metrics with:
+kubectl top nodes
+kubectl top pods --all-namespaces
+
+or add manually
+kubectl -n kube-system edit deployment metrics-server
+Add the security bypass to deployment under container.args
+- --kubelet-insecure-tls
+Restart the deployment
+kubectl -n kube-system rollout restart deployment metrics-server
+Verify if the metrics server is running
+kubectl get pods -n kube-system
+kubectl top nodes
+**********************************************************************************************************************
