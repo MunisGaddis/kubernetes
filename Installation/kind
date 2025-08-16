@@ -17,7 +17,7 @@ if [ "$(uname -m)" = "x86_64" ]; then
 fi
 
 # Install kubectl
-VERSION="v1.30.0"
+VERSION="v1.33.1"
 URL="https://dl.k8s.io/release/${VERSION}/bin/linux/amd64/kubectl"
 INSTALL_DIR="/usr/local/bin"
 
