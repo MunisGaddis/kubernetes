@@ -39,9 +39,11 @@ kubectl get pv
 kubectl apply -f networkpolicy.yaml
 kubectl get networkpolicy
 
-Once every object has been created, try to access WordPress on the browser by searching on the 
-browser as {node-IP:nodeport} or if you have configured the Ingress Controller, search the Domain 
-name on the browser.
+kubectl port-forward svc/wordpress-service 8080:80 --address=0.0.0.0 &
+
+Add Port 8080 in Security AWS
+Access WordPress : PublicIP:Port
+
 kubectl delete -f .
 **********************************************************************************************************
 kubectl delete all --all -n wordpress
