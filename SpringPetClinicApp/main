@@ -6,52 +6,7 @@ push to dockerhub :- docker push monudocker334/petclinic-app-k8s:latest
 kubectl create namespace dev
 Set as dev namespace as default namespace:
 kubectl config set-context --current --namespace=dev
-Create a MySQL deployment and service in the dev namespace.
 
-create mysql deployment
-nano mysql-deployment.yml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: mysql-db
-  namespace: dev
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: mysql
-  template:
-    metadata:
-      labels:
-        app: mysql
-    spec:
-      containers:
-      - name: mysql
-        image: mysql:8.4
-        ports:
-        - containerPort: 3306
-        env:
-        - name: MYSQL_USER
-          value: petclinic
-        - name: MYSQL_PASSWORD
-          value: petclinic
-        - name: MYSQL_ROOT_PASSWORD
-          value: root
-        - name: MYSQL_DATABASE
-          value: petclinic
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mysql-service
-  namespace: dev
-spec:
-  type: ClusterIP  
-  ports:
-    - port: 3306
-      targetPort: 3306
-  selector:
-    app: mysql
 **********************************************************************
 kubectl apply -f mysql-deployment.yml
 kubectl get all -n dev
@@ -62,54 +17,6 @@ USE petclinic;
 SHOW TABLES;
 SELECT * FROM owners;
 exit
-***********************************************************************
-Create a deployment for the Spring PetClinic application with two replicas.
-nano petclinic-app-deployment.yml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: petclinic-app
-  namespace: dev
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: petclinic
-  template:
-    metadata:
-      labels:
-        app: petclinic
-    spec:
-      containers:
-        - name: petclinic
-          image: monudocker334/petclinic-app:latest
-          ports:
-            - containerPort: 8080
-          env:
-            - name: MYSQL_URL
-              value: jdbc:mysql://mysql-service:3306/petclinic
-            - name: MYSQL_USER
-              value: petclinic
-            - name: MYSQL_PASSWORD
-              value: petclinic
-            - name: MYSQL_ROOT_PASSWORD
-              value: root
-            - name: MYSQL_DATABASE
-              value: petclinic
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: petclinic-service
-  namespace: dev
-spec:
-  type: NodePort
-  selector:
-    app: petclinic
-  ports:
-    - port: 8080
-      targetPort: 8080
-      nodePort: 30007
 *****************************************************************************
 kubectl apply -f petclinic-app-deployment.yml
 kubectl get all -n dev
