@@ -3,18 +3,6 @@ git clone https://github.com/subha-devops-design/petclinic-app.git
 build image :- docker build -t monudocker334/petclinic-app-k8s:latest .
 push to dockerhub :- docker push monudocker334/petclinic-app-k8s:latest
 
-Step 1: Build a Custom Docker Image of WordPress
-Step 2: Push the image to DockerHub
-Step 3: Create a Namespace
-Step 4: Create Secret
-Step 5: Create ConfigMap
-Step 6: Deploy MySQL Database
-Step 7: Deploy WordPress
-Step 8: Create a NetworkPolicy
-Step 9: Log in to WordPress UI
-Step 10: Clean Up the Setup
-
-
 kubectl create namespace dev
 Set as dev namespace as default namespace:
 kubectl config set-context --current --namespace=dev
