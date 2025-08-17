@@ -1,8 +1,94 @@
-├── java-app
-│   ├── configmap.yml
-│   ├── hpa.yml
-│   └── java.yml
-├── mysql
-│   ├── configmap.yml
-│   └── mysql.yml
-└── secret.yml
+Build and Create Java Application Docker Image
+Step 1: Build the Java Application
+Step 2: Build a Docker Image of the Application
+Step 3: Push the image to DockerHub
+Deploy Java & MySQL On Kubernetes
+Step 1: Create Namespaces
+Step 2: Create Secrets
+Step 3: Create ConfigMap for MySQL
+Step 4: Deploy MySQL Database
+Step 5: Create ConfigMap for Java Application
+Step 6: Deploy Java Application
+Step 7: Deploy HorizontalPodAutoscaler (HPA)
+Step 8: Access the Java Application
+Step 9: Clean Up
+
+git clone https://github.com/spring-projects/spring-petclinic.git
+sudo apt install maven
+mvn clean install -Dmaven.test.skip=true
+
+create nano Dockerfile
+
+FROM techiescamp/jre-17:1.0.0
+COPY /target/*.jar /app/java.jar
+EXPOSE 8080
+
+docker build -t monudocker334/petclinic-app .
+docker push monudocker334/petclinic-app
+******************************************************************************************
+Run the following commands to create both namespace
+
+kubectl create ns pet-clinic-app
+kubectl create ns pet-clinic-db
+
+Now, create the secret in both namespaces using the following command.
+kubectl apply -f secret
+
+Run the following command to verify the secret is created in both namespace
+
+kubectl get secret -n pet-clinic-app
+kubectl get secret -n pet-clinic-db
+
+Run the below command to create a configmap.
+kubectl apply -f configmap.yml
+
+Now, run the following command to verify if the ConfigMap is created
+kubectl get cm -n pet-clinic-db
+
+Run the below command to deploy the MySQL database.
+kubectl apply -f mysql.yml
+
+Now, run the following command to check if the MySQL StatefulSet has been created.
+kubectl get sts -n pet-clinic-db
+
+Run the below command to create a configmap.
+kubectl apply -f configmap.yml
+kubectl get cm -n pet-clinic-app
+
+Run the below command to deploy the Java application.
+kubectl apply -f java.yml
+kubectl get deploy -n pet-clinic-app
+
+For HPA to work, you need to have a metrics server running in the cluster.
+kubectl top po -n pet-clinic-app
+kubectl apply -f hpa.yml
+kubectl get hpa -n pet-clinic-app
+*************************************************************************************************************************************************************************
+Step 9: Clean Up
+
+It's important to clean up the setup if it's no longer needed; run the following commands to clean up the setup.
+
+1. Delete Java App Deployment
+Let's start with deleting the Java application, CD into the 03-java-app-deployment/java-app folder and run the following command
+kubectl delete -f .
+This command will delete all the resources created by the manifest files inside the java-app directory, it deletes the Java app deployment, configmap, and HPA.
+
+2. Delete MySQL
+The next step is to delete MySQL, CD into the 03-java-app-deployment/mysql folder and run the following command
+kubectl delete -f .
+This command will delete all the resources created by the manifest files inside the mysql directory, it deletes the MySQL statefulset and configmap.
+
+3. Delete Secret
+
+To delete the secret in both namespace, CD into the 03-java-app-deployment and run the following commands
+Just change the namespace in the secret.yml file to pet-clinic-app and pet-clinic-db then run the following command twice, once for each namespace.
+kubectl delete -f secret.yml
+4. Delete Namespaces
+
+Finally, delete the namespaces, run the following command to delete both namespaces
+
+kubectl delete ns pet-clinic-app
+kubectl delete ns pet-clinic-db
+**************************************************************************************************************************************************************************
+
+
