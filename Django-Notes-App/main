@@ -2,8 +2,8 @@ git clone https://github.com/LondheShubham153/django-notes-app.git
 
 git checkout dev
 cd django notes-app
-build image :- docker build -t monudocker334/notes-app-k8s:latest .
-push to dockerhub :- docker push monudocker334/notes-app-k8s:latest
+build image :- docker build -t monudocker334/notes-app:latest .
+push to dockerhub :- docker push monudocker334/notes-app:latest
 docker rmi image ID
 
 Create dir k8s and create namespace, deployment and service.yml
