@@ -239,7 +239,7 @@ kubectl get pods -n default
 kubectl port-forward svc/vote 5000:5000 &
 If you really need to forward to a different local port, do:
 
-kubectl port-forward svc/vote 5001:5000 &
+kubectl port-forward svc/result 5001:5000 &
 This will map local port 5001 to cluster port 5000.
 
 🌐 Access in Browser:
