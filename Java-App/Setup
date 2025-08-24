@@ -2,6 +2,7 @@ Build and Create Java Application Docker Image
 Step 1: Build the Java Application
 Step 2: Build a Docker Image of the Application
 Step 3: Push the image to DockerHub
+
 Deploy Java & MySQL On Kubernetes
 Step 1: Create Namespaces
 Step 2: Create Secrets
