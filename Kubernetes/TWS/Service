@@ -98,7 +98,8 @@ kubectl get svc -n nginx-ns
 **********************************************************************************
 nginx is running on port 82
 if we use ClusterIP We need to foward port in order to run nginx
-kubectl port-forward svc/nginx-svc -n nginx-ns -p 82:82
+kubectl port-forward svc/nginx-svc 82:82 -n nginx-ns &
+
 access nginx : http://localhost:82
 
 if we are using AWS ubuntu VM then use loadbalancer in service.yml
