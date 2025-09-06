@@ -276,4 +276,42 @@ www-nginx-1
 www-nginx-2
 
 Pods start and terminate in order.
-********************************************************************************************************************************************
+****************************************************************************************************************************************
+🔹 What is a DaemonSet?
+
+A DaemonSet ensures that a copy of a pod runs on every node in the cluster (or a subset of nodes using node selectors, affinity, or taints/tolerations).
+
+Typical use cases:
+
+Running cluster-level agents (e.g., log collectors like Fluentd, Fluent Bit).
+Running monitoring daemons (e.g., Prometheus Node Exporter).
+Running networking plugins (e.g., Calico, Cilium).
+Running storage daemons.
+
+Here’s a simple DaemonSet YAML that deploys an nginx pod on every node:
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: nginx-daemonset
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: nginx-daemon
+  template:
+    metadata:
+      labels:
+        app: nginx-daemon
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.25
+        ports:
+        - containerPort: 80
+
+🔹 How it Works
+
+Each node in the cluster will run one nginx pod.
+If a new node is added, Kubernetes will automatically schedule the DaemonSet pod on that node.
+If a node is removed, its DaemonSet pod is also removed.
