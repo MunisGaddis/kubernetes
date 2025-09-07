@@ -1,0 +1,58 @@
+Kubernetes (K8s) is a container orchestration platform that manages containerized applications across a cluster of machines. 
+Its architecture is master-worker based and is designed for high availability, scalability, and resilience. The main components are divided into Control Plane (Master Node) and Worker Nodes.
+
+1. Control Plane (Master Node)
+
+The Control Plane is responsible for managing the cluster. It makes global decisions about the cluster (e.g., scheduling), 
+detects and responds to events, and maintains the desired state of workloads.
+
+Key components:
+
+API Server (kube-apiserver)
+Acts as the front-end of the Kubernetes control plane.
+Handles RESTful API requests (kubectl, other components).
+All cluster operations go through it.
+
+etcd
+Distributed key-value store that stores cluster state and configuration.
+Reliable storage for all data related to nodes, pods, services, and secrets.
+Controller Manager (kube-controller-manager)
+Runs controllers to regulate the state of the cluster.
+Examples: Node Controller, Replication Controller, Endpoint Controller.
+
+Scheduler (kube-scheduler)
+Assigns pods to nodes based on resource availability, policies, and constraints.
+Ensures workloads are efficiently distributed.
+Cloud Controller Manager (optional)
+Integrates Kubernetes with cloud provider APIs.
+Manages resources like load balancers, storage, and nodes in a cloud environment.
+
+2. Worker Node
+Worker nodes run the application workloads (pods) and communicate with the control plane.
+
+Key components:
+kubelet
+Agent running on each node.
+Ensures containers are running in a pod according to the PodSpec.
+Communicates with the API server.
+
+Container Runtime
+Software that runs containers, e.g., Docker, containerd, or CRI-O.
+
+kube-proxy
+Handles networking for pods and services.
+Implements service discovery and load balancing.
+
+Pods
+The smallest deployable unit in Kubernetes.
+Contains one or more containers.
+
+3. Kubernetes Objects
+
+Kubernetes manages these declarative objects:
+Pod – A group of one or more containers.
+Service – Exposes pods to the network.
+Deployment – Manages replicas and updates for pods.
+ConfigMap / Secret – Holds configuration and sensitive data.
+
+Namespace – Provides logical partitioning of resources.
