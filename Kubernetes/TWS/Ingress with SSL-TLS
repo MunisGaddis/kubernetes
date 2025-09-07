@@ -1,1 +1,58 @@
+Ingress with SSL/TLS in Kubernetes is essentially the configuration of an Ingress resource to securely handle HTTPS traffic to your services. Let me break it down step by step:
 
+1. What is Ingress:- An Ingress is a Kubernetes object that manages external access to services in a cluster, typically HTTP/HTTPS.
+
+It provides routing rules, e.g., example.com routes to Service A, api.example.com routes to Service B.
+It sits on top of Ingress Controllers (like Nginx Ingress Controller, Traefik, or HAProxy), which actually implement the routing.
+
+2. Why SSL/TLS?
+
+SSL/TLS ensures that data between clients (like browsers) and your services is encrypted.
+Without TLS, traffic is sent as plain HTTP, which is insecure.
+With TLS, the URLs become https://example.com instead of http://example.com.
+
+3. How Ingress with TLS works
+
+TLS Certificate: You need a certificate (e.g., from Let’s Encrypt) and its private key.
+Secret in Kubernetes: Store the certificate and key as a Secret of type kubernetes.io/tls.
+Example:
+
+Ingress with TLS: Reference the Secret in your Ingress:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: my-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+    - hosts:
+        - example.com
+      secretName: my-tls-secret
+  rules:
+    - host: example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: my-service
+                port:
+                  number: 80
+
+
+Ingress Controller terminates the TLS connection:
+
+Client → HTTPS → Ingress Controller → HTTP → Service.
+The Ingress Controller handles encryption/decryption.
+
+4. Benefits
+Secure traffic with HTTPS.
+Centralized certificate management at the Ingress level.
+Host/path-based routing with encryption.
+Can integrate with Let’s Encrypt via cert-manager for automatic certificate issuance.
+**************************************************************************************************************************************************
+Link :- https://maxanuj.medium.com/how-to-configure-ingress-tls-ssl-certificates-in-kubernetes-cedafb29dd48
+****************************************************************************************************************************************************
