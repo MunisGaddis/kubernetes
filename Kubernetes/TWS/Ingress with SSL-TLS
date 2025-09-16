@@ -11,44 +11,7 @@ SSL/TLS ensures that data between clients (like browsers) and your services is e
 Without TLS, traffic is sent as plain HTTP, which is insecure.
 With TLS, the URLs become https://example.com instead of http://example.com.
 
-3. How Ingress with TLS works
-
-TLS Certificate: You need a certificate (e.g., from Let’s Encrypt) and its private key.
-Secret in Kubernetes: Store the certificate and key as a Secret of type kubernetes.io/tls.
-Example:
-
-Ingress with TLS: Reference the Secret in your Ingress:
-
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: my-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/rewrite-target: /
-spec:
-  tls:
-    - hosts:
-        - example.com
-      secretName: my-tls-secret
-  rules:
-    - host: example.com
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: my-service
-                port:
-                  number: 80
-
-
-Ingress Controller terminates the TLS connection:
-
-Client → HTTPS → Ingress Controller → HTTP → Service.
-The Ingress Controller handles encryption/decryption.
-
-4. Benefits
+3. Benefits
 Secure traffic with HTTPS.
 Centralized certificate management at the Ingress level.
 Host/path-based routing with encryption.
@@ -56,3 +19,115 @@ Can integrate with Let’s Encrypt via cert-manager for automatic certificate is
 **************************************************************************************************************************************************
 Link :- https://maxanuj.medium.com/how-to-configure-ingress-tls-ssl-certificates-in-kubernetes-cedafb29dd48
 ****************************************************************************************************************************************************
+Ingress Controller with TLS
+
+Create Service and Pod
+Create Ingress Resource(with host name)
+Create TLS Certificate key-pair
+Create secret with TLS data
+Update Ingress Resource with TLS
+Verify and Test
+****************************************************************************************************************************************************
+1. Run the Caddy Pod
+kubectl run caddy --image=caddy
+
+2. Expose the Pod as a Service
+kubectl expose pod caddy --name=caddy-svc --port=80
+
+3. Get All Resources
+kubectl get all
+
+4. Describe the Service
+kubectl describe svc caddy-svc
+
+
+✅ Create ingress.yml (Non-TLS)
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple-ing
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - host: learnwithgvr.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: caddy-svc
+                port:
+                  number: 80
+
+Apply and Describe Ingress
+kubectl apply -f ingress.yml
+kubectl describe ing
+
+✅ Add Host Mapping
+
+Make sure minikube is running and get its IP:
+minikube ip
+
+Then update /etc/hosts:
+echo $(minikube ip) learnwithgvr.com | sudo tee -a /etc/hosts
+
+✅ Create TLS Certificate and Key
+openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout tls.key -out tls.crt -subj "/CN=learnwithgvr.com" -days 365
+
+Check files:
+ls -l
+
+✅ Create TLS Secret in Kubernetes
+kubectl create secret tls sec-learnwithgvr --cert=tls.crt --key=tls.key
+
+Verify:
+kubectl get secrets
+
+✅ Modify ingress.yml to Enable TLS
+
+Here’s the final Ingress with TLS config:
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: simple-ing
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  tls:
+    - hosts:
+        - learnwithgvr.com
+      secretName: sec-learnwithgvr
+  rules:
+    - host: learnwithgvr.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: caddy-svc
+                port:
+                  number: 80
+
+
+Apply the updated Ingress:
+
+kubectl apply -f ingress.yml
+kubectl describe ing
+
+curl --cacert tls.crt https://learnwithgvr.com
+
+✅ Final Check
+
+Make sure:
+Ingress Controller (e.g. nginx) is installed in your cluster:
+minikube addons enable ingress
+
+Check ingress controller is running:
+kubectl get pods -n ingress-nginx
+
+Port forward or access https://learnwithgvr.com in browser – it should work if you're using Minikube.
+
