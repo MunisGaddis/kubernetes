@@ -1,3 +1,4 @@
+git clone https://github.com/techiescamp/kubernetes-projects.git
 *******************************************************************************************
 Step 1: Build a Custom Docker Image of WordPress
 Step 2: Push the image to DockerHub
